@@ -34,9 +34,9 @@ class NSCR(Tilemap):
         stream.write(self.header.to_bytes())
         stream.write(self.scrn.to_bytes())
 
-        self.filesize = stream.tell()
-        stream.seek(8)
-        stream.write_UInt32(self.filesize)
+        stream.write_nitro_filesize()
+
+        return stream.getvalue()
 
 
 class NSCR_SCRN:

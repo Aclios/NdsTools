@@ -35,9 +35,7 @@ class NCER(File):
         if self.section_count >= 3:
             stream.write(self.uext.to_bytes())
 
-        self.filesize = stream.tell()
-        stream.seek(8)
-        stream.write_UInt32(self.filesize)
+        stream.write_nitro_filesize()
 
         return stream.getvalue()
 

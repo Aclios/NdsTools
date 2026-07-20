@@ -58,6 +58,14 @@ class EndianBinaryWriter:
         data = r + (g << 5) + (b << 10)
         self.write_UInt16(data)
 
+    def write_nitro_filesize(self):
+        pos = self.tell()
+        self.seek(0, 2)
+        filesize = self.tell()
+        self.seek(8)
+        self.write_UInt32(filesize)
+        self.seek(pos)
+
 
 class EndianBinaryFileWriter(EndianBinaryWriter):
     def __init__(self, filepath: str, endianness: str = "little"):

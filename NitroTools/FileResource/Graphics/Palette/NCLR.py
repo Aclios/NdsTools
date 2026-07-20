@@ -59,9 +59,7 @@ class NCLR(Palette):
         if self.header.section_count >= 2:
             stream.write(self.pcmp.to_bytes())
 
-        self.filesize = stream.tell()
-        stream.seek(8)
-        stream.write_UInt32(self.filesize)
+        stream.write_nitro_filesize()
 
         return stream.getvalue()
 
