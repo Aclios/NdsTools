@@ -55,6 +55,7 @@ class File:
         else:
             open(filepath, mode="wb").write(self.to_bytes())
 
+
 class NitroHeader:
     def __init__(self, f: EndianBinaryReader, magic: bytes):
         self.magic = f.check_magic(magic)

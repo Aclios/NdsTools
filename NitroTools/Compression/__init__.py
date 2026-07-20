@@ -45,6 +45,7 @@ def compress(in_data: bytes, code: "str"):
         case _:
             raise Exception(f"Unknown compression code: {code}")
 
+
 def decompress_file(in_file: str, out_file: str = None):
     compressed_data = Path(in_file).read_bytes()
     decompressed_data, _ = decompress(compressed_data)

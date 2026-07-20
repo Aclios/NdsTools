@@ -53,8 +53,8 @@ class EndianBinaryReader:
                 f"Error: Invalid magic. Expected {str(magic)}, read {str(check)}"
             )
         return magic
-    
-    def peek(self, size: int=0):
+
+    def peek(self, size: int = 0):
         val = self.read(size)
         self.seek(-size, 1)
         return val

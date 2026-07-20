@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 class FNTB_Directory:
     _curr_file_idx: int
+
     def __init__(self, f: EndianBinaryReader, base_offset: int):
         self.offset = f.read_UInt32()
         self.file_start_idx = f.read_UInt16()
@@ -22,7 +23,7 @@ class FNTB_Directory:
 
     def has_sub_directories(self):
         return any(child.is_dir for child in self.children)
-        
+
 
 class FNTB_Child:
     def __init__(self, f: EndianBinaryReader):
@@ -30,9 +31,10 @@ class FNTB_Child:
         chunk = f.read_UInt8()
         self.name_size = chunk & 0x7F
         self.is_dir = bool(chunk >> 7)
-        self.name = f.read(self.name_size).decode('shift-jis-2004')
+        self.name = f.read(self.name_size).decode("shift-jis-2004")
         if self.is_dir:
             self.next_id = f.read_UInt16() & 0xFFF
+
 
 class NARC(File):
     """
@@ -41,6 +43,7 @@ class NARC(File):
     :params inp: The input can either be an active EndianBinaryReader (if you want to read from an opened file),
         a bytes or bytearray stream, or a path to a file in your system.
     """
+
     def read(self, f: EndianBinaryReader):
         self.files: list[NARCFile] = []
         self.header = NitroHeader(f, b"NARC")
@@ -51,7 +54,7 @@ class NARC(File):
         self._resolve_filetree()
 
     def _resolve_filetree(self):
-        self.build_children(self.fntb.directories[0], '.')
+        self.build_children(self.fntb.directories[0], ".")
 
     def build_children(self, dir: FNTB_Directory, current_path: Path):
         dir._curr_file_idx = dir.file_start_idx
@@ -60,21 +63,25 @@ class NARC(File):
                 new_dir = self.fntb.directories[child.next_id]
                 self.build_children(new_dir, Path(current_path, child.name))
             else:
-                self.files.append(NARCFile(Path(current_path, child.name), self._get_file_data(dir._curr_file_idx)))
+                self.files.append(
+                    NARCFile(
+                        Path(current_path, child.name),
+                        self._get_file_data(dir._curr_file_idx),
+                    )
+                )
                 dir._curr_file_idx += 1
-
 
     def _get_file_data(self, file_idx: int):
         data_start = self.fatb.file_starts[file_idx]
         data_end = self.fatb.file_ends[file_idx]
         return self.fimg.data[data_start:data_end]
-    
-    
+
     def export_files(self, out_dir: str):
         for file in self.files:
             out_path = Path(out_dir, file.path)
             out_path.parent.mkdir(parents=True, exist_ok=True)
             out_path.write_bytes(file.data)
+
 
 class NARC_FATB:
     def __init__(self, f: EndianBinaryReader):
@@ -87,14 +94,17 @@ class NARC_FATB:
             self.file_starts.append(f.read_UInt32())
             self.file_ends.append(f.read_UInt32())
 
+
 class NARC_FNTB:
     def __init__(self, f: EndianBinaryReader):
         base_offset = f.tell()
         self.magic = f.check_magic(b"BTNF")
         self.section_size = f.read_UInt32()
-        first_offset = int.from_bytes(f.peek(4), 'little')
+        first_offset = int.from_bytes(f.peek(4), "little")
         self.entry_count = first_offset // 8
-        self.directories = [FNTB_Directory(f, base_offset + 8) for _ in range(self.entry_count)]
+        self.directories = [
+            FNTB_Directory(f, base_offset + 8) for _ in range(self.entry_count)
+        ]
         f.seek(base_offset + self.section_size)
 
 
@@ -105,6 +115,7 @@ class NARC_FIMG:
         self.data = f.read(self.entry_size - 8)
         if len(self.data) < self.entry_size - 8:
             raise Exception("Error: NARC data ends earlier than excepted.")
+
 
 @dataclass
 class NARCFile:
