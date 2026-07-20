@@ -29,10 +29,10 @@ class NCER(File):
         stream.write(self.header.to_bytes())
         stream.write(self.cebk.to_bytes())
 
-        if self.section_count >= 2:
+        if self.header.section_count >= 2:
             stream.write(self.labl.to_bytes())
 
-        if self.section_count >= 3:
+        if self.header.section_count >= 3:
             stream.write(self.uext.to_bytes())
 
         stream.write_nitro_filesize()

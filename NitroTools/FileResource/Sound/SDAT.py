@@ -14,7 +14,7 @@ class SDAT(File):
         self.header = NitroHeader(f, b"SDAT")
         assert (
             self.header.section_count == 4
-        ), f"Unsupported SDAT format with {self.section_count} sections"
+        ), f"Unsupported SDAT format with {self.header.section_count} sections"
 
         self.symb_offset = f.read_UInt32()
         self.symb_size = f.read_UInt32()
