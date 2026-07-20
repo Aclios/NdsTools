@@ -2,7 +2,7 @@ from NitroTools.FileSystem import EndianBinaryReader, EndianBinaryStreamWriter
 from NitroTools.FileResource.Common import Tile, OAM
 import struct
 import json
-from NitroTools.FileResource.File import File
+from NitroTools.FileResource.File import File, NitroHeader
 
 
 class NCER(File):
@@ -15,26 +15,18 @@ class NCER(File):
     """
 
     def read(self, f):
-        self.magic = f.check_magic(b"RECN")
-        self.unk = f.read_UInt32()
-        self.filesize = f.read_UInt32()
-        self.header_size = f.read_UInt16()
-        self.section_count = f.read_UInt16()
+        self.header = NitroHeader(f, b"RECN")
         self.cebk = NCER_CEBK(f)
 
-        if self.section_count >= 2:
+        if self.header.section_count >= 2:
             self.labl = NCER_LABL(f, self.cebk.cell_count)
 
-        if self.section_count >= 3:
+        if self.header.section_count >= 3:
             self.uext = NCER_UEXT(f)
 
     def to_bytes(self):
         stream = EndianBinaryStreamWriter()
-        stream.write(self.magic)
-        stream.write_UInt32(self.unk)
-        stream.write_UInt32(0)
-        stream.write_UInt16(self.header_size)
-        stream.write_UInt16(self.section_count)
+        stream.write(self.header.to_bytes())
         stream.write(self.cebk.to_bytes())
 
         if self.section_count >= 2:

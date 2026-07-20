@@ -1,5 +1,6 @@
 from NitroTools.FileSystem import EndianBinaryReader, EndianBinaryStreamWriter
 from NitroTools.FileResource.Graphics.Bitmap.Bitmap import Bitmap
+from NitroTools.FileResource.File import NitroHeader
 
 
 class NCGR(Bitmap):
@@ -13,16 +14,12 @@ class NCGR(Bitmap):
     """
 
     def read(self, f: EndianBinaryReader):
-        self.magic = f.check_magic(b"RGCN")
-        self.unk = f.read_UInt32()
-        self.filesize = f.read_UInt32()
-        self.header_size = f.read_UInt16()
-        self.section_count = f.read_UInt16()
-        assert self.section_count <= 2
+        self.header = NitroHeader(f, b"RGCN")
+        assert self.header.section_count <= 2
         "Expected a number of sections <= 2"
         self.char = NCGR_CHAR(f)
 
-        if self.section_count == 2:
+        if self.header.section_count >= 2:
             self.cpos = NCGR_CPOS(f)
 
     def get_data(self) -> bytes:
@@ -62,14 +59,10 @@ class NCGR(Bitmap):
 
     def to_bytes(self):
         stream = EndianBinaryStreamWriter()
-        stream.write(self.magic)
-        stream.write_UInt32(self.unk)
-        stream.write_UInt32(0)
-        stream.write_UInt16(self.header_size)
-        stream.write_UInt16(self.section_count)
+        stream.write(self.header.to_bytes())
         stream.write(self.char.to_bytes())
 
-        if self.section_count == 2:
+        if self.header.section_count == 2:
             stream.write(self.cpos.to_bytes())
 
         self.filesize = stream.tell()

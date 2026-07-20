@@ -1,5 +1,6 @@
 from NitroTools.FileSystem import EndianBinaryReader, EndianBinaryStreamWriter
 from NitroTools.FileResource.Graphics.Tilemap.Tilemap import Tilemap, MapData
+from NitroTools.FileResource.File import NitroHeader
 
 
 class NSCR(Tilemap):
@@ -12,12 +13,7 @@ class NSCR(Tilemap):
     """
 
     def read(self, f: EndianBinaryReader):
-        self.magic = f.check_magic(b"RCSN")
-        self.unk = f.read_UInt32()
-        self.filesize = f.read_UInt32()
-        self.header_size = f.read_UInt16()
-        self.section_count = f.read_UInt16()
-        assert self.section_count == 1
+        self.header = NitroHeader(f, b"RCSN")
         self.scrn = NSCR_SCRN(f)
 
     def get_mapdata(self) -> list[MapData]:
@@ -35,11 +31,7 @@ class NSCR(Tilemap):
 
     def to_bytes(self):
         stream = EndianBinaryStreamWriter()
-        stream.write(self.magic)
-        stream.write_UInt32(self.unk)
-        stream.write_UInt32(0)
-        stream.write_UInt16(self.header_size)
-        stream.write_UInt16(self.section_count)
+        stream.write(self.header.to_bytes())
         stream.write(self.scrn.to_bytes())
 
         self.filesize = stream.tell()

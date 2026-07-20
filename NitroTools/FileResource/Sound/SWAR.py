@@ -1,5 +1,5 @@
 from NitroTools.FileSystem import EndianBinaryReader, EndianBinaryFileWriter
-from NitroTools.FileResource.File import File
+from NitroTools.FileResource.File import File, NitroHeader
 from NitroTools.FileResource.Sound.ADPCM import decode_block
 
 from pathlib import Path
@@ -13,11 +13,7 @@ class SWAR(File):
     """
 
     def read(self, f: EndianBinaryReader):
-        self.magic = f.check_magic(b"SWAR")
-        self.unk = f.read_UInt32()
-        self.filesize = f.read_UInt32()
-        self.header_size = f.read_UInt16()
-        self.block = f.read_UInt16()
+        self.header = NitroHeader(f, b"SWAR")
         self.data = SWARDATA(f)
 
     def extract(self, out_dir):

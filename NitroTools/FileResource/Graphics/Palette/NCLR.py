@@ -1,5 +1,7 @@
 from NitroTools.FileSystem import EndianBinaryReader, EndianBinaryStreamWriter
 from NitroTools.FileResource.Graphics.Palette.Palette import Palette
+from NitroTools.FileResource.File import NitroHeader
+
 from math import ceil
 
 
@@ -13,13 +15,9 @@ class NCLR(Palette):
     """
 
     def read(self, f: EndianBinaryReader):
-        self.magic = f.check_magic(b"RLCN")
-        self.unk = f.read_UInt32()
-        self.filesize = f.read_UInt32()
-        self.header_size = f.read_UInt16()
-        self.section_count = f.read_UInt16()
+        self.header = NitroHeader(f, b"RLCN")
         self.pltt = NCLR_PLTT(f)
-        if self.section_count == 2:
+        if self.header.section_count >= 2:
             self.pcmp = NCLR_PCMP(f)
 
     def get_colors(self):
@@ -39,7 +37,7 @@ class NCLR(Palette):
 
         self.pltt.data_size = len(self.pltt.colors) // 3 * 2
 
-        if self.section_count == 2:
+        if self.header.section_count == 2:
             if self.pltt.bit_depth == 4:
                 self.pcmp.palette_count = ceil(self.pltt.data_size / 0x20)
             elif self.pltt.bit_depth == 8:
@@ -55,14 +53,10 @@ class NCLR(Palette):
 
     def to_bytes(self):
         stream = EndianBinaryStreamWriter()
-        stream.write(self.magic)
-        stream.write_UInt32(self.unk)
-        stream.write_UInt32(0)
-        stream.write_UInt16(self.header_size)
-        stream.write_UInt16(self.section_count)
+        stream.write(self.header.to_bytes())
         stream.write(self.pltt.to_bytes())
 
-        if self.section_count == 2:
+        if self.header.section_count >= 2:
             stream.write(self.pcmp.to_bytes())
 
         self.filesize = stream.tell()

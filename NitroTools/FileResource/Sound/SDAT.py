@@ -1,5 +1,5 @@
 from NitroTools.FileSystem import EndianBinaryReader
-from NitroTools.FileResource.File import File
+from NitroTools.FileResource.File import File, NitroHeader
 import os
 from pathlib import Path
 from NitroTools.FileResource.Sound.SWAR import SWAR
@@ -11,13 +11,9 @@ class SDAT(File):
     """
 
     def read(self, f: EndianBinaryReader):
-        self.magic = f.check_magic(b"SDAT")
-        self.unk = f.read_UInt32()
-        self.filesize = f.read_UInt32()
-        self.header_size = f.read_UInt16()
-        self.section_count = f.read_UInt16()
+        self.header = NitroHeader(f, b"SDAT")
         assert (
-            self.section_count == 4
+            self.header.section_count == 4
         ), f"Unsupported SDAT format with {self.section_count} sections"
 
         self.symb_offset = f.read_UInt32()

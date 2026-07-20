@@ -2,6 +2,7 @@ from NitroTools.FileSystem import (
     EndianBinaryReader,
     EndianBinaryFileReader,
     EndianBinaryStreamReader,
+    EndianBinaryStreamWriter,
 )
 from pathlib import Path
 from NitroTools.Compression import decompress, compress
@@ -63,3 +64,12 @@ class NitroHeader:
         self.filesize = f.read_UInt32()
         self.header_size = f.read_UInt16()
         self.section_count = f.read_UInt16()
+
+    def to_bytes(self):
+        stream = EndianBinaryStreamWriter()
+        stream.write(self.magic)
+        stream.write_UInt32(self.unk)
+        stream.write_UInt32(self.filesize)
+        stream.write_UInt16(self.header_size)
+        stream.write_UInt16(self.section_count)
+        return stream.getvalue()

@@ -1,5 +1,5 @@
 from NitroTools.FileSystem import EndianBinaryReader
-from NitroTools.FileResource.File import File
+from NitroTools.FileResource.File import File, NitroHeader
 from NitroTools.FileResource.Graphics import ImageCanva, RawBitmap, RawPalette
 from NitroTools.FileResource.Common import texel_decompress
 
@@ -9,20 +9,13 @@ import os
 
 class NSBMD(File):
     def read(self, f: EndianBinaryReader):
-        self.magic = f.check_magic(b"BMD0")
-        self.unk = f.read_UInt32()
-        self.filesize = f.read_UInt32()
-        self.header_size = f.read_UInt16()
-        self.section_count = f.read_UInt16()
-        assert (
-            self.section_count <= 2
-        ), f"Unsupported section count for NSBMD: {self.section_count}, expected 2 or less"
+        self.header = NitroHeader(f, b"BMD0")
         self.mdl_offset = f.read_UInt32()
-        if self.section_count == 2:
+        if self.header.section_count >= 2:
             self.tex_offset = f.read_UInt32()
         f.seek(self.mdl_offset)
         self.mdl = MDL0(f)
-        if self.section_count == 2:
+        if self.header.section_count >= 2:
             f.seek(self.tex_offset)
             self.tex = TEX0(f)
 
