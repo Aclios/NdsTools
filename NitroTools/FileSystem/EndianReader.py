@@ -12,6 +12,7 @@ class EndianBinaryReader:
         self.read = self.file.read
         self.tell = self.file.tell
         self.seek = self.file.seek
+        self.peek = self.file.peek
 
     def set_endianness(self, endianness: str):
         if endianness == "little":
@@ -45,13 +46,18 @@ class EndianBinaryReader:
     def read_UInt64(self) -> int:
         return struct.unpack(f"{self.endian_flag}Q", self.read(8))[0]
 
-    def check_magic(self, magic):
-        check = self.read(4)
+    def check_magic(self, magic: bytes) -> bytes:
+        check = self.read(len(magic))
         if check != magic:
             raise Exception(
                 f"Error: Invalid magic. Expected {str(magic)}, read {str(check)}"
             )
         return magic
+    
+    def peek(self, size: int=0):
+        val = self.read(size)
+        self.seek(-size, 1)
+        return val
 
     def read_string_until_null(self) -> bytes:
         data = b""

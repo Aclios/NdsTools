@@ -54,3 +54,11 @@ class File:
             open(filepath, mode="wb").write(compress(self.to_bytes(), self.compression))
         else:
             open(filepath, mode="wb").write(self.to_bytes())
+
+class NitroHeader:
+    def __init__(self, f: EndianBinaryReader, magic: bytes):
+        self.magic = f.check_magic(magic)
+        self.unk = f.read_UInt32()
+        self.filesize = f.read_UInt32()
+        self.header_size = f.read_UInt16()
+        self.section_count = f.read_UInt16()

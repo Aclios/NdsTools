@@ -11,6 +11,7 @@ from .huffman import (
     compress_huffman8bits,
     compress_raw_huffman8bits,
 )
+from pathlib import Path
 
 
 def decompress(in_data: bytes):
@@ -43,3 +44,11 @@ def compress(in_data: bytes, code: "str"):
             return compress_rle(in_data)
         case _:
             raise Exception(f"Unknown compression code: {code}")
+
+def decompress_file(in_file: str, out_file: str = None):
+    compressed_data = Path(in_file).read_bytes()
+    decompressed_data, _ = decompress(compressed_data)
+    if out_file:
+        Path(out_file).write_bytes(decompressed_data)
+        return
+    Path(in_file).write_bytes(decompressed_data)
