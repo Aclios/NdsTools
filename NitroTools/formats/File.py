@@ -5,7 +5,7 @@ from NitroTools.fs import (
     EndianBinaryStreamWriter,
 )
 from pathlib import Path
-from NitroTools.compression import decompress, compress
+from NitroTools.compression_ import decompress, compress
 
 FileInput = EndianBinaryReader | bytes | bytearray | str | Path
 
