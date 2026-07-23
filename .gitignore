@@ -3,3 +3,6 @@ tests
 test.py
 docs/build
 docs
+dist
+*.egg-info
+.venv

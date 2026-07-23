@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ndstools"
+version = "0.1.0"
+description = "Tools to work with Nintendo DS common file and compression formats"
+readme = "README.md"
+requires-python = ">=3.13"
+license = {text = "MIT"}
+
+authors = [
+    {name = "Aclios"}
+]
+
+dependencies = [
+    "pillow==11.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["ndstools"]
