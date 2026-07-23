@@ -1,10 +1,12 @@
-from ndstools.fs import EndianBinaryReader
-from ndstools.formats.File import File, NitroHeader
-from ndstools.formats.graphics import ImageCanva, RawBitmap, RawPalette
-from ndstools.formats.common import texel_decompress
+from src.ndstools.fs import EndianBinaryReader
+from src.ndstools.formats.File import File, NitroHeader
+from ndstools.formats.graphics import ImageCanva
+from src.ndstools.formats.common import texel_decompress
 
 from pathlib import Path
 import os
+
+from src.ndstools.formats.graphics import RawBitmap, RawPalette
 
 
 class NSBMD(File):

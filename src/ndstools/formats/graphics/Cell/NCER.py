@@ -1,8 +1,8 @@
-from ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
+from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
 from ndstools.formats.common import Tile, OAM
 import struct
 import json
-from ndstools.formats.File import File, NitroHeader
+from src.ndstools.formats.File import File, NitroHeader
 
 
 class NCER(File):

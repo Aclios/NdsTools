@@ -1,6 +1,6 @@
-from ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
-from ndstools.formats.graphics.Palette.Palette import Palette
-from ndstools.formats.File import NitroHeader
+from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
+from src.ndstools.formats.graphics.Palette.Palette import Palette
+from src.ndstools.formats.File import NitroHeader
 
 from math import ceil
 

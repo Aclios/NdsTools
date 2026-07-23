@@ -1,6 +1,6 @@
 from PIL import Image
 from .Tile import Tile
-from ..common import eightbpp_to_fourbpp
+from . import eightbpp_to_fourbpp
 
 
 class Shape:

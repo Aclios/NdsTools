@@ -1,3 +1,5 @@
+from src.ndstools.formats.common import convert_from_eightbpp, convert_to_eightbpp, empty_im, paste_alpha
+
 from .Bitmap import *
 from .Palette import *
 from .Tilemap import *
@@ -6,10 +8,6 @@ from PIL import Image
 from ndstools.formats.common import (
     Tile,
     OAM,
-    paste_alpha,
-    convert_from_eightbpp,
-    convert_to_eightbpp,
-    empty_im,
 )
 
 

@@ -1,4 +1,4 @@
-from ndstools.formats.File import File
+from src.ndstools.formats.File import File
 
 
 class Bitmap(File):

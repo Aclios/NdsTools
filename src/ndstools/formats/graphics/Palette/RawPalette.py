@@ -1,5 +1,5 @@
-from ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
-from ndstools.formats.graphics.Palette.Palette import Palette
+from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
+from src.ndstools.formats.graphics.Palette.Palette import Palette
 
 
 class RawPalette(Palette):

@@ -1,5 +1,5 @@
-from ndstools.formats.File import File, NitroHeader
-from ndstools.fs import EndianBinaryReader
+from src.ndstools.formats.File import File, NitroHeader
+from src.ndstools.fs import EndianBinaryReader
 
 from pathlib import Path
 from dataclasses import dataclass

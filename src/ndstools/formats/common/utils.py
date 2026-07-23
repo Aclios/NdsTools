@@ -1,7 +1,7 @@
 import struct
 from PIL import Image
 
-from ndstools.fs import EndianBinaryStreamReader
+from src.ndstools.fs import EndianBinaryStreamReader
 
 
 def eightbpp_to_fourbpp(data: bytes | bytearray):
