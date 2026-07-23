@@ -25,7 +25,7 @@ source: https://github.com/magical/nlzss
 from struct import pack
 from collections import defaultdict
 from operator import itemgetter
-from NitroTools.FileSystem import EndianBinaryStreamReader
+from NitroTools.fs import EndianBinaryStreamReader
 
 
 class DecompressionError(ValueError):
@@ -252,10 +252,6 @@ def compress_raw_lz10(in_data: bytes):
 
         length += 1
         length += sum(2 if f else 1 for f in flags)
-
-    #  padding = 4 - (length % 4 or 4)
-    # if padding:
-    #    out += (b'\xff' * padding)
 
     return out
 

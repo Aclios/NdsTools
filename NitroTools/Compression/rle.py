@@ -1,4 +1,4 @@
-from NitroTools.FileSystem import EndianBinaryStreamReader
+from NitroTools.fs import EndianBinaryStreamReader
 from struct import pack
 
 

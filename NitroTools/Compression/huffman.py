@@ -1,4 +1,4 @@
-from NitroTools.FileSystem import EndianBinaryStreamReader, EndianBinaryStreamWriter
+from NitroTools.fs import EndianBinaryStreamReader, EndianBinaryStreamWriter
 from struct import pack
 
 
@@ -345,11 +345,11 @@ def compress_raw_huffman(in_data: bytes, num_bits: int):
 
 
 def compress_raw_huffman4bits(in_data: bytes):
-    return compress_raw_huffman(in_data, 4)
+    return bytearray(compress_raw_huffman(in_data, 4))
 
 
 def compress_raw_huffman8bits(in_data: bytes):
-    return compress_raw_huffman(in_data, 8)
+    return bytearray(compress_raw_huffman(in_data, 8))
 
 
 def compress_huffman4bits(in_data: bytes):

@@ -1,3 +1,5 @@
 __pycache__
 tests
 test.py
+docs/build
+docs
