@@ -1,9 +1,17 @@
-from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamReader
+from src.ndstools.fs import EndianBinaryReader
 from src.ndstools.formats.File import File
+from .FNT_FAT import FNT, FAT
+from .overlay import Overlay
 
 from pathlib import Path
 from dataclasses import dataclass
 from typing import List
+
+
+@dataclass
+class ROMFile:
+    path: Path
+    data: bytes
 
 
 class NDSRom(File):
@@ -68,31 +76,28 @@ class NDSRom(File):
             Overlay(f) for _ in range(len(self.arm7_ov_table_data) // 0x20)
         ]
 
-        self.load_files_and_overlays(f)
+        self._load_files_and_overlays(f)
 
-    def load_files_and_overlays(self, f: EndianBinaryReader):
+    def _get_file_data(self, f: EndianBinaryReader, file_idx: int) -> bytes:
+        file_access = self.fat.files[file_idx]
+        return f.read_data_at(
+            file_access.data_start_offset,
+            file_access.data_end_offset - file_access.data_start_offset,
+        )
+
+    def _load_files_and_overlays(self, f: EndianBinaryReader):
         self.files: List[ROMFile] = []
         for file in self.fnt.files:
-            file_access = self.fat.files[file.idx]
-            f.seek(file_access.data_start_offset)
-            data = f.read(file_access.data_end_offset - file_access.data_start_offset)
+            data = self._get_file_data(f, file.idx)
             self.files.append(ROMFile(file.path, data))
 
-        for overlay9 in self.overlay9:
-            file_access = self.fat.files[overlay9.fat_idx]
-            f.seek(file_access.data_start_offset)
-            overlay9.data = f.read(
-                file_access.data_end_offset - file_access.data_start_offset
-            )
+        for overlay in self.overlay9:
+            overlay.data = self._get_file_data(f, overlay.fat_idx)
 
-        for overlay7 in self.overlay7:
-            file_access = self.fat.files[overlay7.fat_idx]
-            f.seek(file_access.data_start_offset)
-            overlay7.data = f.read(
-                file_access.data_end_offset - file_access.data_start_offset
-            )
+        for overlay in self.overlay7:
+            overlay.data = self._get_file_data(f, overlay.fat_idx)
 
-    def extract_data(self, out_dir: str):
+    def extract_all(self, out_dir: str):
         code_dir = Path(out_dir, "code")
         dump_dir = Path(out_dir, "dump")
         files_dir = Path(out_dir, "files")
@@ -109,7 +114,7 @@ class NDSRom(File):
 
         files_dir.mkdir(exist_ok=True, parents=True)
         for file in self.files:
-            filepath = Path(out_dir, "files", file.path)
+            filepath = Path(out_dir, file.path)
             filepath.parent.mkdir(parents=True, exist_ok=True)
             filepath.write_bytes(file.data)
 
@@ -118,102 +123,3 @@ class NDSRom(File):
 
         for overlay7 in self.overlay7:
             Path(code_dir, f"overlay_{overlay7.idx:04d}.bin").write_bytes(overlay7.data)
-
-
-class FAT:
-    def __init__(self, data: bytes):
-        file_count = len(data) // 8
-        f = EndianBinaryStreamReader(data)
-        self.files = [
-            FAT_Entry(f.read_UInt32(), f.read_UInt32()) for _ in range(file_count)
-        ]
-
-
-@dataclass
-class FAT_Entry:
-    data_start_offset: int
-    data_end_offset: int
-
-
-@dataclass
-class FNT_File:
-    path: Path
-    idx: int
-
-
-@dataclass
-class ROMFile:
-    path: Path
-    data: bytes
-
-
-class FNT_Directory:
-    _curr_file_idx: int
-
-    def __init__(self, f: EndianBinaryReader):
-        self.offset = f.read_UInt32()
-        self.file_start_idx = f.read_UInt16()
-        self.children_dir_count = f.read_UInt16() & 0xFFF
-        pos = f.tell()
-        f.seek(self.offset)
-        self.children: list[FNT_Child] = []
-        lookup = f.peek(1)
-        while int.from_bytes(lookup):
-            self.children.append(FNT_Child(f))
-            lookup = f.peek(1)
-        f.seek(pos)
-
-
-class FNT:
-    def __init__(self, data: bytes):
-        f = EndianBinaryStreamReader(data)
-        first_offset = int.from_bytes(f.peek(4), "little")
-        self.entry_count = first_offset // 8
-        self.directories = [FNT_Directory(f) for _ in range(self.entry_count)]
-        self.files: List[FNT_File] = []
-        self._resolve_filetree()
-
-    def _resolve_filetree(self):
-        self._resolve_directory(self.directories[0], ".")
-
-    def _resolve_directory(self, dir: FNT_Directory, current_path: Path):
-        dir._curr_file_idx = dir.file_start_idx
-        for child in dir.children:
-            if child.is_dir:
-                new_dir = self.directories[child.next_id]
-                self._resolve_directory(new_dir, Path(current_path, child.name))
-            else:
-                self.files.append(
-                    FNT_File(
-                        Path(current_path, child.name),
-                        dir._curr_file_idx,
-                    )
-                )
-                dir._curr_file_idx += 1
-
-
-class FNT_Child:
-    def __init__(self, f: EndianBinaryReader):
-        self.next_id = -1
-        chunk = f.read_UInt8()
-        self.name_size = chunk & 0x7F
-        self.is_dir = bool(chunk >> 7)
-        self.name = f.read(self.name_size).decode("shift-jis-2004")
-        if self.is_dir:
-            self.next_id = f.read_UInt16() & 0xFFF
-
-
-class Overlay:
-    data: bytes
-
-    def __init__(self, f: EndianBinaryReader):
-        self.idx = f.read_UInt32()
-        self.ram_adress = f.read_UInt32()
-        self.data_size = f.read_UInt32()
-        self.bss_size = f.read_UInt32()
-        self.static_init_start = f.read_UInt32()
-        self.static_init_end = f.read_UInt32()
-        self.fat_idx = f.read_UInt32()
-        compressed_data = f.read_UInt32()
-        self.is_compressed = bool(compressed_data >> 24)
-        self.decompressed_size = compressed_data & 0xFF_FF_FF
