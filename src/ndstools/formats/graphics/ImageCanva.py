@@ -1,4 +1,9 @@
-from src.ndstools.formats.common import convert_from_eightbpp, convert_to_eightbpp, empty_im, paste_alpha
+from src.ndstools.formats.common import (
+    convert_from_eightbpp,
+    convert_to_eightbpp,
+    empty_im,
+    paste_alpha,
+)
 
 from .Bitmap import *
 from .Palette import *

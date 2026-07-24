@@ -67,6 +67,10 @@ class EndianBinaryReader:
             byte = self.read(1)
         return data
 
+    def read_data_at(self, offset: int, size: int):
+        self.seek(offset)
+        return self.read(size)
+
     def align(self, alignment: int):
         mod = self.tell() % alignment
         if mod != 0:
