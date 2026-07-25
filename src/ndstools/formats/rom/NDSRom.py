@@ -114,7 +114,7 @@ class NDSRom(File):
 
         files_dir.mkdir(exist_ok=True, parents=True)
         for file in self.files:
-            filepath = Path(out_dir, file.path)
+            filepath = Path(files_dir, file.path)
             filepath.parent.mkdir(parents=True, exist_ok=True)
             filepath.write_bytes(file.data)
 
