@@ -1,8 +1,10 @@
 from src.ndstools.fs import EndianBinaryStreamReader
 from .lz10 import decompress_raw_lz10
 
+
 class DecompressionError(ValueError):
     pass
+
 
 def decompress_blz(data: bytes):
     """
@@ -22,7 +24,9 @@ def decompress_blz(data: bytes):
     compressed_data = bytearray(compressed_data)
     # FIXME: don't do that?
     compressed_data.reverse()
-    decompressed_data = decompress_raw_lz10(compressed_data, compressed_data_size + extra_size, disp_extra=3)
+    decompressed_data = decompress_raw_lz10(
+        compressed_data, compressed_data_size + extra_size, disp_extra=3
+    )
     decompressed_data.reverse()
     start_data = data[:-compressed_data_size]
     out_data = start_data + decompressed_data

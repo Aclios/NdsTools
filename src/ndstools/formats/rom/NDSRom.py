@@ -66,8 +66,8 @@ class NDSRom(File):
         self.secure_area_disable = f.read(8)
 
         self.rom_size = f.read_UInt32()
-        self.header_size = f.read_UInt32() #0x4000 ?
-        self.arm9_info_offset = f.read_UInt32() # inside arm9
+        self.header_size = f.read_UInt32()  # 0x4000 ?
+        self.arm9_info_offset = f.read_UInt32()  # inside arm9
         self.padding2 = f.read(0x34)
         if self.padding2 != bytes(0x34):
             print("Warning: second padding area isn't actually all padding...!")
@@ -85,9 +85,13 @@ class NDSRom(File):
         self.padding4 = f.read(0x40)
         if self.padding4 != bytes(0x40):
             print("Warning: fourth padding area isn't actually all padding...!")
-        self.stuff = f.read(self.header_size - 0x200) #TODO see what the stuff at 0xF80 is
+        self.stuff = f.read(
+            self.header_size - 0x200
+        )  # TODO see what the stuff at 0xF80 is
 
-        self.arm9 = ARM9(f, self.arm9_info_offset, self.arm9_offset, self.arm9_data_size)
+        self.arm9 = ARM9(
+            f, self.arm9_info_offset, self.arm9_offset, self.arm9_data_size
+        )
         self.arm7_data = f.read_data_at(self.arm7_offset, self.arm7_data_size)
 
         self.fnt_data = f.read_data_at(self.fnt_offset, self.fnt_size)
@@ -158,9 +162,13 @@ class NDSRom(File):
             filepath.write_bytes(file.data)
 
         for overlay9 in self.overlay9:
-            Path(code_dir, f"overlay_{overlay9.idx:04d}.bin").write_bytes(overlay9.get_data())
+            Path(code_dir, f"overlay_{overlay9.idx:04d}.bin").write_bytes(
+                overlay9.get_data()
+            )
 
         for overlay7 in self.overlay7:
-            Path(code_dir, f"overlay_{overlay7.idx:04d}.bin").write_bytes(overlay7.get_data())
+            Path(code_dir, f"overlay_{overlay7.idx:04d}.bin").write_bytes(
+                overlay7.get_data()
+            )
 
-        self.banner.get_icon().save(Path(out_dir, 'icon.png'))
+        self.banner.get_icon().save(Path(out_dir, "icon.png"))
