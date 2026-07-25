@@ -1,0 +1,14 @@
+from src.ndstools.fs import EndianBinaryReader
+from src.ndstools.formats.File import File, NitroHeader
+from .tex0 import TEX0
+
+
+class NSBTX(File):
+    def read(self, f: EndianBinaryReader):
+        self.header = NitroHeader(f, b"BTX0")
+        self.tex_offset = f.read_UInt32()
+        f.seek(self.tex_offset)
+        self.tex = TEX0(f)
+
+    def export_textures(self, out_dir: str):
+        self.tex.export_textures(out_dir)
