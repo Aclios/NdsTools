@@ -24,12 +24,7 @@ class RawPalette(Palette):
             self.colors.extend(f.read_palette_color())
 
     def get_colors(self):
-        if (
-            len(self.colors) > 3 * 256
-        ):  # indexed png only handle up to 256 colors, so we can't push more than that. Bigger palettes (typically 8bpp with several full palettes) can't be fully exported
-            return self.colors[0 : 3 * 256]
-        else:
-            return self.colors
+        return self.colors
 
     def set_colors(self, colors: list[int]):
         if len(self.colors) > 3 * 256:

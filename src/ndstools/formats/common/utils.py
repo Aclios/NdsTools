@@ -2,6 +2,7 @@ import struct
 from PIL import Image
 
 from src.ndstools.fs import EndianBinaryStreamReader
+from typing import Tuple, List
 
 
 def eightbpp_to_fourbpp(data: bytes | bytearray):
@@ -91,7 +92,7 @@ def empty_im(
     im_size: tuple[int, int], palette: list[int], bit_depth: int, transparency: bool
 ):
     im = Image.new(mode="P", size=im_size)
-    im.putpalette(palette)
+    im.putpalette(palette[0:256])
     if transparency:
         if bit_depth == 4:
             im.info["transparency"] = (b"\x00" + b"\xff" * 15) * 16
@@ -136,15 +137,19 @@ def paste_alpha(
 
 
 def texel_decompress(
-    data: bytes, info: bytes, Palette, im_size: tuple[int, int]
-) -> bytearray:
+    data: bytes, info: bytes, colors: list[int], im_size: tuple[int, int]
+) -> Tuple[bytes, List[int]]:
+    # TODO: remove palette stuff in this and move the function in the models folder
+
+    def get_rgb(pal_index: int):
+        return colors[3 * pal_index : 3 * (pal_index + 1)]
 
     width, height = im_size
     finf = EndianBinaryStreamReader(info)
     fdat = EndianBinaryStreamReader(data)
     out_data = bytearray(width * height)
-    colors = Palette.get_colors()
-    new_colors = []
+    # force first index to be the transparent
+    new_colors = [[-1, -1, -1]]
     for j in range(0, height, 4):
         for i in range(0, width, 4):
             tex_data = fdat.read_UInt32()
@@ -152,84 +157,64 @@ def texel_decompress(
             pal_offset = pal_info & 0x3FFF
             pal_idx_start = pal_offset * 2
             pal_mode = pal_info >> 14
-
             for hTex in range(4):
                 texel_row = (tex_data >> (hTex * 8)) & 0xFF
                 for wTex in range(4):
                     texel = (texel_row >> (wTex * 2)) & 0x3
-                    data_pos = (i + hTex) * width + (j + wTex)
-                    pal_index = (pal_idx_start + texel) % 256
+                    pal_index = pal_idx_start + texel
                     match pal_mode:
                         case 0:
                             if texel == 3:
-                                pix_colors = [0, 0, 0]  # supposed to be transparent
+                                pix_colors = [-1, -1, -1]  # transparent
                             else:
-                                pix_colors = colors[3 * pal_index : 3 * (pal_index + 1)]
+                                pix_colors = get_rgb(pal_index)
 
                         case 1:
                             if texel == 0:
-                                pix_colors = colors[3 * pal_index : 3 * (pal_index + 1)]
+                                pix_colors = get_rgb(pal_index)
                             elif texel == 1:
-                                pix_colors = colors[3 * pal_index : 3 * (pal_index + 1)]
+                                pix_colors = get_rgb(pal_index)
                             elif texel == 2:
                                 pix_colors = sum_colors(
-                                    colors[
-                                        3 * (pal_idx_start) : 3 * (pal_idx_start + 1)
-                                    ],
-                                    colors[
-                                        3
-                                        * (pal_idx_start + 1) : 3
-                                        * (pal_idx_start + 2)
-                                    ],
+                                    get_rgb(pal_idx_start),
+                                    get_rgb(pal_idx_start + 1),
                                     1,
                                     1,
                                 )
                             elif texel == 3:
-                                pix_colors = [0, 0, 0]  # supposed to be transparent
+                                pix_colors = [-1, -1, -1]  # transparent
 
                         case 2:
-                            pix_colors = colors[3 * pal_index : 3 * (pal_index + 1)]
+                            pix_colors = get_rgb(pal_index)
 
                         case 3:
                             if texel == 0:
-                                pix_colors = colors[3 * pal_index : 3 * (pal_index + 1)]
+                                pix_colors = get_rgb(pal_index)
                             elif texel == 1:
-                                pix_colors = colors[3 * pal_index : 3 * (pal_index + 1)]
+                                pix_colors = get_rgb(pal_index)
                             elif texel == 2:
                                 pix_colors = sum_colors(
-                                    colors[
-                                        3 * (pal_idx_start) : 3 * (pal_idx_start + 1)
-                                    ],
-                                    colors[
-                                        3
-                                        * (pal_idx_start + 1) : 3
-                                        * (pal_idx_start + 2)
-                                    ],
+                                    get_rgb(pal_idx_start),
+                                    get_rgb(pal_idx_start + 1),
                                     5,
                                     3,
                                 )
                             elif texel == 3:
                                 pix_colors = sum_colors(
-                                    colors[
-                                        3 * (pal_idx_start) : 3 * (pal_idx_start + 1)
-                                    ],
-                                    colors[
-                                        3
-                                        * (pal_idx_start + 1) : 3
-                                        * (pal_idx_start + 2)
-                                    ],
+                                    get_rgb(pal_idx_start),
+                                    get_rgb(pal_idx_start + 1),
                                     3,
                                     5,
                                 )
 
-                    if pix_colors in new_colors:
+                    try:
                         val = new_colors.index(pix_colors)
-                    else:
+                    except ValueError:
+                        val = len(new_colors)
                         new_colors.append(pix_colors)
-                        val = len(new_colors) - 1
-
-                    out_data[data_pos] = val
+                    out_data[(hTex + j) * width + wTex + i] = val
+    new_colors[0] = [0, 0, 0]
+    out_colors = []
     for colors in new_colors:
-        out_palette += colors
-    Palette.set_colors(out_palette)
-    return out_data, Palette.to_bytes()
+        out_colors.extend(colors)
+    return out_data, out_colors
