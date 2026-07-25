@@ -1,4 +1,5 @@
 from src.ndstools.fs import EndianBinaryReader
+from src.ndstools.compression import decompress_blz
 
 
 class Overlay:
@@ -15,3 +16,8 @@ class Overlay:
         compressed_data = f.read_UInt32()
         self.is_compressed = bool(compressed_data >> 24)
         self.decompressed_size = compressed_data & 0xFF_FF_FF
+
+    def get_data(self, decompress: bool = True):
+        if self.is_compressed and decompress:
+            return decompress_blz(self.data)
+        return self.data

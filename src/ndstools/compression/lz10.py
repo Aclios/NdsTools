@@ -43,8 +43,7 @@ def get_bits(byte: int):
     yield byte & 1
 
 
-def decompress_raw_lz10(in_data: bytes, decompressed_size: int):
-    disp_extra = 1
+def decompress_raw_lz10(in_data: bytes, decompressed_size: int, disp_extra: int = 1):
     out_data = bytearray()
     stream = EndianBinaryStreamReader(in_data, endianness="big")
 

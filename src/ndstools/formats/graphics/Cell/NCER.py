@@ -1,5 +1,5 @@
 from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
-from ndstools.formats.common import Tile, OAM
+from src.ndstools.formats.common import Tile, OAM
 import struct
 import json
 from src.ndstools.formats.File import File, NitroHeader

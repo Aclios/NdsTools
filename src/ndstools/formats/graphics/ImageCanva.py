@@ -10,7 +10,7 @@ from .Palette import *
 from .Tilemap import *
 from .Cell import *
 from PIL import Image
-from ndstools.formats.common import (
+from src.ndstools.formats.common import (
     Tile,
     OAM,
 )

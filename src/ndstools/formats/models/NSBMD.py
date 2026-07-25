@@ -1,6 +1,6 @@
 from src.ndstools.fs import EndianBinaryReader
 from src.ndstools.formats.File import File, NitroHeader
-from ndstools.formats.graphics import ImageCanva
+from src.ndstools.formats.graphics import ImageCanva
 from src.ndstools.formats.common import texel_decompress
 
 from pathlib import Path
