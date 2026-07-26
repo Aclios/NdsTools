@@ -50,14 +50,6 @@ class EndianBinaryWriter:
         if mod != 0:
             self.write(bytes(alignment - mod))
 
-    def write_palette_color(self, color: list[int]):
-        red, green, blue = color[0], color[1], color[2]
-        r = round(red * 31 / 255)
-        g = round(green * 31 / 255)
-        b = round(blue * 31 / 255)
-        data = r + (g << 5) + (b << 10)
-        self.write_UInt16(data)
-
     def write_nitro_filesize(self):
         pos = self.tell()
         self.seek(0, 2)

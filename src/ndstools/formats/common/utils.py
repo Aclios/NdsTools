@@ -2,6 +2,7 @@ import struct
 from PIL import Image
 
 from src.ndstools.fs import EndianBinaryStreamReader
+from src.ndstools.formats.graphics.Palette.Palette import PaletteColor
 from typing import Tuple, List
 
 
@@ -89,10 +90,14 @@ def convert_to_eightbpp(data: bytes | bytearray, bit_depth: int, pal_idx: int = 
 
 
 def empty_im(
-    im_size: tuple[int, int], palette: list[int], bit_depth: int, transparency: bool
+    im_size: tuple[int, int],
+    colors: list[PaletteColor],
+    bit_depth: int,
+    transparency: bool,
 ):
     im = Image.new(mode="P", size=im_size)
-    im.putpalette(palette[0:256])
+
+    im.putpalette([i for color in colors for i in color.to_int_list()])
     if transparency:
         if bit_depth == 4:
             im.info["transparency"] = (b"\x00" + b"\xff" * 15) * 16
@@ -100,6 +105,16 @@ def empty_im(
             im.info["transparency"] = 0
     # im.apply_transparency()
     return im
+
+
+def get_image_colors(im: Image.Image):
+    pal = im.getpalette(rawmode="RGB")
+    if not pal:
+        raise Exception("No palette found on image")
+    colors = [
+        PaletteColor.from_list(pal[3 * i : 3 * (i + 1)]) for i in range(len(pal) // 3)
+    ]
+    return colors
 
 
 def sum_colors(colors1: list[int], colors2: list[int], w1: int, w2: int):
@@ -137,12 +152,12 @@ def paste_alpha(
 
 
 def texel_decompress(
-    data: bytes, info: bytes, colors: list[int], im_size: tuple[int, int]
+    data: bytes, info: bytes, colors: list[PaletteColor], im_size: tuple[int, int]
 ) -> Tuple[bytes, List[int]]:
     # TODO: remove palette stuff in this and move the function in the models folder
 
     def get_rgb(pal_index: int):
-        return colors[3 * pal_index : 3 * (pal_index + 1)]
+        return colors[pal_index].to_int_list()
 
     width, height = im_size
     finf = EndianBinaryStreamReader(info)

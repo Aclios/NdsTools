@@ -1,5 +1,5 @@
 from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
-from src.ndstools.formats.graphics.Palette.Palette import Palette
+from src.ndstools.formats.graphics.Palette.Palette import Palette, PaletteColor
 from src.ndstools.formats.File import NitroHeader
 
 from math import ceil
@@ -21,21 +21,18 @@ class NCLR(Palette):
             self.pcmp = NCLR_PCMP(f)
 
     def get_colors(self):
-        if len(self.pltt.colors) > 3 * 256:
-            return self.pltt.colors[0 : 3 * 256]
-        else:
-            return self.pltt.colors
+        return self.pltt.colors
 
     def get_bit_depth(self):
         return self.pltt.bit_depth
 
     def set_colors(self, colors: list[int]):
-        if len(self.pltt.colors) > 3 * 256:
-            self.pltt.colors[0 : 3 * 256] = colors
+        if len(self.pltt.colors) > 0x100:
+            self.pltt.colors[:0x100] = colors
         else:
             self.pltt.colors = colors
 
-        self.pltt.data_size = len(self.pltt.colors) // 3 * 2
+        self.pltt.data_size = len(self.pltt.colors) * 2
 
         if self.header.section_count == 2:
             if self.pltt.bit_depth == 4:
@@ -80,10 +77,11 @@ class NCLR_PLTT:
         self.unk1 = f.read_UInt16()
         self.unk2 = f.read_UInt32()
         self.data_size = f.read_UInt32()
+        self.color_count = self.data_size // 2
         self.data_offset = f.read_UInt32()
-        self.colors = []
-        for _ in range(self.data_size // 2):
-            self.colors += f.read_palette_color()
+        self.colors = [
+            PaletteColor.from_bytes(f.read(2)) for _ in range(self.color_count)
+        ]
 
     def to_bytes(self):
         stream = EndianBinaryStreamWriter()
@@ -94,8 +92,8 @@ class NCLR_PLTT:
         stream.write_UInt32(self.unk2)
         stream.write_UInt32(self.data_size)
         stream.write_UInt32(self.data_offset)
-        for i in range(len(self.colors) // 3):
-            stream.write_palette_color(self.colors[3 * i : 3 * i + 3])
+        for color in self.colors:
+            stream.write(color.to_bytes())
 
         self.section_size = stream.tell()
         stream.seek(4)

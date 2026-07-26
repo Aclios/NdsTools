@@ -76,18 +76,6 @@ class EndianBinaryReader:
         if mod != 0:
             self.read(alignment - mod)
 
-    def read_palette_color(self):
-        value = self.read_UInt16()
-        r = value & 0b11111
-        g = (value >> 5) & 0b11111
-        b = (value >> 10) & 0b11111
-
-        red = round(r * 255 / 31)
-        green = round(g * 255 / 31)
-        blue = round(b * 255 / 31)
-
-        return [red, green, blue]
-
 
 class EndianBinaryFileReader(EndianBinaryReader):
     def __init__(self, filepath: str, endianness: str = "little"):

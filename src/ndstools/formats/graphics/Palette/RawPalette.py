@@ -1,5 +1,5 @@
 from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
-from src.ndstools.formats.graphics.Palette.Palette import Palette
+from src.ndstools.formats.graphics.Palette.Palette import Palette, PaletteColor
 
 
 class RawPalette(Palette):
@@ -19,21 +19,21 @@ class RawPalette(Palette):
         f.seek(0, 2)
         self.color_count = f.tell() // 2
         f.seek(0)
-        self.colors = []
-        for _ in range(self.color_count):
-            self.colors.extend(f.read_palette_color())
+        self.colors = [
+            PaletteColor.from_bytes(f.read(2)) for _ in range(self.color_count)
+        ]
 
     def get_colors(self):
         return self.colors
 
-    def set_colors(self, colors: list[int]):
-        if len(self.colors) > 3 * 256:
-            self.colors[0 : 3 * 256] = colors
+    def set_colors(self, colors: list[PaletteColor]):
+        if len(self.colors) > 0x100:
+            self.colors[:0x100] = colors
         else:
             self.colors = colors
 
     def to_bytes(self):
         f = EndianBinaryStreamWriter()
-        for i in range(len(self.colors) // 3):
-            f.write_palette_color(self.colors[3 * i : 3 * i + 3])
+        for color in self.colors:
+            f.write(color.to_bytes())
         return f.getvalue()

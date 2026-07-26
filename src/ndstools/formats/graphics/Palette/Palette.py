@@ -1,28 +1,73 @@
 from src.ndstools.formats.File import File
 
+from typing import List
+
+
+class PaletteColor:
+    """
+    A RGB color of a palette.
+    """
+
+    r: int
+    g: int
+    b: int
+
+    def __init__(self, r: int, g: int, b: int):
+        self.r = r
+        self.g = g
+        self.b = b
+
+    @classmethod
+    def from_bytes(cls, data: bytes):
+        if len(data) != 2:
+            raise Exception("Need exactly 2 bytes to create a color.")
+        value = int.from_bytes(data, "little")
+        r = value & 0b11111
+        g = (value >> 5) & 0b11111
+        b = (value >> 10) & 0b11111
+
+        red = round(r * 255 / 31)
+        green = round(g * 255 / 31)
+        blue = round(b * 255 / 31)
+
+        return cls(red, green, blue)
+
+    @classmethod
+    def from_list(cls, L: List[int]):
+        return cls(L[0], L[1], L[2])
+
+    def to_bytes(self):
+        r = round(self.r * 31 / 255)
+        g = round(self.g * 31 / 255)
+        b = round(self.b * 31 / 255)
+        data = r + (g << 5) + (b << 10)
+        return data.to_bytes(2, "little")
+
+    def to_int_list(self) -> List[int]:
+        return [self.r, self.g, self.b]
+
 
 class Palette(File):
     """
     The Parent Class for palette files.
     """
 
-    def get_colors(self) -> list[int]:
+    color_count: int
+    colors: List[PaletteColor]
+
+    def get_colors(self) -> List[PaletteColor]:
         """
         Returns the palette colors.
 
-        :returns: A list of int. Each int represents a component (Red, Green, or Blue) of a color.
-            They are stored in the following way: [R1, G1, B1, R2, G2, B2, ...].
-            That means the output has a length of 3 * number_of_color.
+        :returns: A list of PaletteColor.
         """
         pass
 
-    def set_colors(self, colors: list[int]):
+    def set_colors(self, colors: List[PaletteColor]):
         """
         Set the palette colors.
 
-        :param colors: A list of int. Each int represents a component (Red, Green, or Blue) of a color.
-            They must be stored in the following way: [R1, G1, B1, R2, G2, B2, ...].
-            That means the input should have a length of 3 * number_of_color.
+        :param colors: A list of PaletteColor.
 
             WARNING: it's important to note that Nintendo DS palette colors are stored in 5 bits per
             component, meaning that imported colors might be slightly different than expected.
@@ -30,6 +75,9 @@ class Palette(File):
             For example, R = 4 would be approximated to R = 0, and R = 5 would be approximated to R = 8.
 
         """
+        pass
+
+    def set_colors_with_im_list(self, colors: List[int]):
         pass
 
     def get_bit_depth(self) -> int:

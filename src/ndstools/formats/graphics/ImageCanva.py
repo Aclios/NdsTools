@@ -3,6 +3,7 @@ from src.ndstools.formats.common import (
     convert_to_eightbpp,
     empty_im,
     paste_alpha,
+    get_image_colors,
 )
 
 from .Bitmap import *
@@ -285,7 +286,7 @@ class ImageCanva:
 
     def build_im(self, pal_idx: int = 0):
         """
-        Build automatically the image(s) using the objects currently loaded in th Canva.
+        Build automatically the image(s) using the objects currently loaded in the Canva.
 
         :params pal_idx: The index of the subpalette the image should follow. It is useful if the same Bitmap has several colorings,
         for example for an animation. It isn't used if there is a Tilemap or a Cell object.
@@ -328,7 +329,6 @@ class ImageCanva:
         :params im: The Image.
         :params cell_idx: The cell index.
         """
-        colors = im.getpalette()
         self.tiles = self.generate_tile_list()
         cell = self.Cell.cebk.cells[cell_idx]
         min_x = min([OAM_data.x_pos for OAM_data in cell.OAM_data_list])
@@ -365,7 +365,7 @@ class ImageCanva:
             newdata += tile.to_bytes()
 
         self.Bitmap.set_data(newdata)
-        self.Palette.set_colors(colors)
+        self.Palette.set_colors(get_image_colors(im))
 
     def import_image_with_tilemap(self, im: Image.Image):
         """
@@ -373,7 +373,6 @@ class ImageCanva:
 
         :params im: The Image.
         """
-        colors = im.getpalette()
         mapinfos: list[MapData] = []
         data = bytes()
         tiles_data: list[bytes] = []
@@ -399,7 +398,7 @@ class ImageCanva:
                 mapinfos.append(mapdata)
 
         self.Bitmap.set_data(data)
-        self.Palette.set_colors(colors)
+        self.Palette.set_colors(get_image_colors(im))
         self.Tilemap.set_mapdata(mapinfos)
         self.Tilemap.set_im_size(im.size)
 
@@ -409,7 +408,6 @@ class ImageCanva:
 
         :params im: The Image.
         """
-        colors = im.getpalette()
         data = bytearray()
         for j in range(im.height // self.OAM_height):
             for i in range(im.width // self.OAM_width):
@@ -430,7 +428,7 @@ class ImageCanva:
                 data += oam.to_bytes()
         self.Bitmap.set_data(data)
         self.Bitmap.set_im_size(im.size)
-        self.Palette.set_colors(colors)
+        self.Palette.set_colors(get_image_colors(im))
 
     def import_linear_image(self, im: Image.Image):
         """
@@ -438,8 +436,7 @@ class ImageCanva:
 
         :params im: The Image.
         """
-        colors = im.getpalette()
         data = convert_from_eightbpp(im.tobytes(), self.bit_depth)
         self.Bitmap.set_data(data)
         self.Bitmap.set_im_size(im.size)
-        self.Palette.set_colors(colors)
+        self.Palette.set_colors(get_image_colors(im))
