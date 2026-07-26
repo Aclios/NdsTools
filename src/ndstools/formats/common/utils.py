@@ -28,15 +28,15 @@ def fourbpp_to_eightbpp(data: bytes | bytearray, pal_idx: int = 0):
 def twobpp_to_eightbpp(data: bytes | bytearray, pal_idx: int = 0):
     newdata = bytearray()
     for val in data:
-        p1 = (val & 0x4) + (0x4 * pal_idx)
-        p2 = ((val >> 2) & 0x4) + (0x4 * pal_idx)
-        p3 = ((val >> 4) & 0x4) + (0x4 * pal_idx)
-        p4 = ((val >> 6) & 0x4) + (0x4 * pal_idx)
+        p1 = (val & 0x3) + (0x4 * pal_idx)
+        p2 = ((val >> 2) & 0x3) + (0x4 * pal_idx)
+        p3 = ((val >> 4) & 0x3) + (0x4 * pal_idx)
+        p4 = ((val >> 6) & 0x3) + (0x4 * pal_idx)
         newdata += (
-            struct.pack("<B", p1)
-            + struct.pack("<B", p2)
+            struct.pack("<B", p4)
             + struct.pack("<B", p3)
-            + struct.pack("<B", p4)
+            + struct.pack("<B", p2)
+            + struct.pack("<B", p1)
         )
     return newdata
 
