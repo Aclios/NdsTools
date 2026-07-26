@@ -133,7 +133,7 @@ class ImageCanva:
 
         :params linear_flag: The linear flag.
         """
-        if self.linear is not None:
+        if linear_flag is not None:
             self.linear = linear_flag
 
     def set_transparency(self, transparency: bool):
@@ -144,7 +144,7 @@ class ImageCanva:
 
         :params transparency: Transparency flag.
         """
-        if self.transparency is not None:
+        if transparency is not None:
             self.transparency = transparency
 
     def generate_tile_list(self):
