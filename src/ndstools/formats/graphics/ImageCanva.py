@@ -133,7 +133,8 @@ class ImageCanva:
 
         :params linear_flag: The linear flag.
         """
-        self.linear = linear_flag
+        if self.linear is not None:
+            self.linear = linear_flag
 
     def set_transparency(self, transparency: bool):
         """
@@ -143,7 +144,8 @@ class ImageCanva:
 
         :params transparency: Transparency flag.
         """
-        self.transparency = transparency
+        if self.transparency is not None:
+            self.transparency = transparency
 
     def generate_tile_list(self):
         """
@@ -199,7 +201,7 @@ class ImageCanva:
         eightbpp_data = convert_to_eightbpp(
             self.Bitmap.get_data(), self.bit_depth, pal_idx
         )
-        im.putdata(eightbpp_data)
+        im.putdata(eightbpp_data[: self.im_width * self.im_height])
         return [im]
 
     def build_image_with_tilemap(self):
