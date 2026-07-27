@@ -4,27 +4,21 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-
-@dataclass
-class FAT_Entry:
-    data_start_offset: int
-    data_end_offset: int
-
-
-class FAT:
-    def __init__(self, data: bytes):
-        file_count = len(data) // 8
-        f = EndianBinaryStreamReader(data)
-        self.files = [
-            FAT_Entry(f.read_UInt32(), f.read_UInt32()) for _ in range(file_count)
-        ]
-
-
 @dataclass
 class FNT_File:
     path: Path
     idx: int
 
+
+class FNT_Child:
+    def __init__(self, f: EndianBinaryReader):
+        self.next_id = -1
+        chunk = f.read_UInt8()
+        self.name_size = chunk & 0x7F
+        self.is_dir = bool(chunk >> 7)
+        self.name = f.read(self.name_size).decode("shift-jis-2004")
+        if self.is_dir:
+            self.next_id = f.read_UInt16() & 0xFFF
 
 class FNT_Directory:
     _curr_file_idx: int
@@ -69,14 +63,3 @@ class FNT:
                     )
                 )
                 dir._curr_file_idx += 1
-
-
-class FNT_Child:
-    def __init__(self, f: EndianBinaryReader):
-        self.next_id = -1
-        chunk = f.read_UInt8()
-        self.name_size = chunk & 0x7F
-        self.is_dir = bool(chunk >> 7)
-        self.name = f.read(self.name_size).decode("shift-jis-2004")
-        if self.is_dir:
-            self.next_id = f.read_UInt16() & 0xFFF
