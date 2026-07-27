@@ -1,5 +1,5 @@
 from src.ndstools.fs import EndianBinaryReader
-from src.ndstools.formats.graphics.Bitmap.Bitmap import Bitmap
+from ndstools.formats.graphics.bitmap.bitmap import Bitmap
 
 
 class RawBitmap(Bitmap):

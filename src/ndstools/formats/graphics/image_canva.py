@@ -6,10 +6,10 @@ from src.ndstools.formats.common import (
     get_image_colors,
 )
 
-from .Bitmap import *
-from .Palette import *
+from .bitmap import *
+from .palette import *
 from .Tilemap import *
-from .Cell import *
+from .cell import *
 from PIL import Image
 from src.ndstools.formats.common import (
     Tile,

@@ -2,7 +2,7 @@ import struct
 from PIL import Image
 
 from src.ndstools.fs import EndianBinaryStreamReader
-from src.ndstools.formats.graphics.Palette import PaletteColor, RawPalette
+from src.ndstools.formats.graphics.palette import PaletteColor, RawPalette
 from typing import Tuple, List
 
 

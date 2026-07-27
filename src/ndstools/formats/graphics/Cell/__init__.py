@@ -1,1 +1,1 @@
-from src.ndstools.formats.graphics.Cell.NCER import NCER
+from .ncer import NCER

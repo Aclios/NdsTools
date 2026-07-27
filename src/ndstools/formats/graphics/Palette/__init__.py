@@ -1,3 +1,3 @@
-from src.ndstools.formats.graphics.Palette.NCLR import NCLR
-from src.ndstools.formats.graphics.Palette.Palette import Palette, PaletteColor
-from src.ndstools.formats.graphics.Palette.RawPalette import RawPalette
+from .nclr import NCLR
+from .palette import Palette, PaletteColor
+from .raw_palette import RawPalette

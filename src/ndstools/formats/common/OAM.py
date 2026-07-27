@@ -1,5 +1,5 @@
 from PIL import Image
-from src.ndstools.formats.common.Tile import Tile
+from src.ndstools.formats.common.tile import Tile
 from src.ndstools.formats.common.utils import convert_from_eightbpp
 
 
@@ -21,7 +21,7 @@ class OAM:
         bit_depth: int,
         linear: bool,
     ):
-        assert size in VALID_OAM_SIZE, "Invalid oam size"
+        assert size in VALID_OAM_SIZE, "Invalid OAM size"
         self.bit_depth = bit_depth
         self.size = size
         self.width, self.height = size

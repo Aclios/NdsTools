@@ -1,3 +1,3 @@
-from src.ndstools.formats.common.OAM import OAM
-from src.ndstools.formats.common.Tile import Tile
-from src.ndstools.formats.common.utils import *
+from .oam import OAM
+from .tile import Tile
+from .utils import *

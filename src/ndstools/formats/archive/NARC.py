@@ -1,6 +1,6 @@
 from src.ndstools.formats.File import File, NitroHeader
 from src.ndstools.fs import EndianBinaryReader
-from src.ndstools.formats.rom.FNT_FAT import FNT, FAT
+from src.ndstools.formats.rom.fntfat import FNT, FAT
 
 from pathlib import Path
 from dataclasses import dataclass

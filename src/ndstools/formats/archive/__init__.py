@@ -1,1 +1,1 @@
-from .NARC import NARC
+from .narc import NARC
