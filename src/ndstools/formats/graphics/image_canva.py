@@ -8,7 +8,7 @@ from src.ndstools.formats.common import (
 
 from .bitmap import *
 from .palette import *
-from .Tilemap import *
+from .tilemap import *
 from .cell import *
 from PIL import Image
 from src.ndstools.formats.common import (
