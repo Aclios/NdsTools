@@ -1,5 +1,5 @@
 from PIL import Image
-from src.ndstools.formats.common.utils import (
+from src.ndstools.formats.graphics.utils import (
     convert_from_eightbpp,
     convert_to_eightbpp,
 )

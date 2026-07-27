@@ -1,6 +1,6 @@
 from PIL import Image
-from src.ndstools.formats.common.tile import Tile
-from src.ndstools.formats.common.utils import convert_from_eightbpp
+from ndstools.formats.graphics.core.tile import Tile
+from src.ndstools.formats.graphics.utils import convert_from_eightbpp
 
 
 class OAM:

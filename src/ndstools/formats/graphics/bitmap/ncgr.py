@@ -1,5 +1,5 @@
 from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
-from src.ndstools.formats.graphics.bitmap.bitmap import Bitmap
+from .bitmap import Bitmap
 from src.ndstools.formats.file import NitroHeader
 
 

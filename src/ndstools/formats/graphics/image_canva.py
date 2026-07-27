@@ -1,20 +1,18 @@
-from src.ndstools.formats.common import (
+from .utils import (
     convert_from_eightbpp,
     convert_to_eightbpp,
     empty_im,
     paste_alpha,
     get_image_colors,
 )
+from src.ndstools.formats.graphics.core.oam import OAM, Tile
+
 
 from .bitmap import *
 from .palette import *
 from .tilemap import *
 from .cell import *
 from PIL import Image
-from src.ndstools.formats.common import (
-    Tile,
-    OAM,
-)
 
 
 class ImageCanva:
