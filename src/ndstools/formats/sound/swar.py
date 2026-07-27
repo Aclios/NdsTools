@@ -1,5 +1,5 @@
 from src.ndstools.fs import EndianBinaryReader, EndianBinaryFileWriter
-from src.ndstools.formats.File import File, NitroHeader
+from src.ndstools.formats.file import File, NitroHeader
 from .adpcm import decode_block
 
 from pathlib import Path

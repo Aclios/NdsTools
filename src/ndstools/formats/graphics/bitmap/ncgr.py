@@ -1,6 +1,6 @@
 from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
 from src.ndstools.formats.graphics.bitmap.bitmap import Bitmap
-from src.ndstools.formats.File import NitroHeader
+from src.ndstools.formats.file import NitroHeader
 
 
 class NCGR(Bitmap):
