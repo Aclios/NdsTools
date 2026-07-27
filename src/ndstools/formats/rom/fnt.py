@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
+
 @dataclass
 class FNT_File:
     path: Path
@@ -19,6 +20,7 @@ class FNT_Child:
         self.name = f.read(self.name_size).decode("shift-jis-2004")
         if self.is_dir:
             self.next_id = f.read_UInt16() & 0xFFF
+
 
 class FNT_Directory:
     _curr_file_idx: int

@@ -172,4 +172,4 @@ class NDSRom(File):
                 overlay7.get_data()
             )
 
-        self.banner.get_icon().save(Path(out_dir, "icon.png"))
+        self.banner.icon.save(Path(out_dir, "icon.png"))

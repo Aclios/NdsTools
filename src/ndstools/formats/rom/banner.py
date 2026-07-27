@@ -64,14 +64,12 @@ class NDSBanner:
             self.chinese = self.read_name(f)
         if self.info.has_korean:
             self.korean = self.read_name(f)
-
-    @staticmethod
-    def read_name(f: EndianBinaryReader):
-        return f.read(0x100).decode("utf-16").strip("\0")
-
-    def get_icon(self):
         canva = ImageCanva(
             bitmap=self.bitmap, palette=self.palette, bit_depth=4, im_size=(32, 32)
         )
         canva.resolve()
-        return canva.image
+        self.icon = canva.image
+
+    @staticmethod
+    def read_name(f: EndianBinaryReader):
+        return f.read(0x100).decode("utf-16").strip("\0")
