@@ -2,7 +2,7 @@ import struct
 from PIL import Image
 
 from src.ndstools.fs import EndianBinaryStreamReader
-from src.ndstools.formats.graphics.Palette.Palette import PaletteColor
+from src.ndstools.formats.graphics.Palette import PaletteColor, RawPalette
 from typing import Tuple, List
 
 
@@ -99,6 +99,8 @@ def empty_im(
 
     im.putpalette([i for color in colors for i in color.to_int_list()])
     if transparency:
+        if bit_depth == 2:
+            im.info["transparency"] = (b"\x00" + b"\xff" * 3) * 64
         if bit_depth == 4:
             im.info["transparency"] = (b"\x00" + b"\xff" * 15) * 16
         elif bit_depth == 8:
@@ -150,6 +152,24 @@ def paste_alpha(
     src_im.paste(src_region, region)
     return src_im
 
+def new_bw_palette(bit_depth: int, inverted: bool = False):
+    num_colors = None
+    match bit_depth:
+        case 2:
+            num_colors = 4
+        case 4:
+            num_colors = 16
+        case 8:
+            num_colors = 256
+    pal = RawPalette(b'')
+    step = 255 / (num_colors  - 1)
+    colors = []
+    for i in range(num_colors):
+        colors.append(PaletteColor.from_list([int(i * step)] * 3))
+    if inverted:
+        colors.reverse()
+    pal.set_colors(colors)
+    return pal
 
 def texel_decompress(
     data: bytes, info: bytes, colors: list[PaletteColor], im_size: tuple[int, int]

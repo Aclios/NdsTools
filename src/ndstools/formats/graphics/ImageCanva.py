@@ -18,6 +18,7 @@ from src.ndstools.formats.common import (
 
 
 class ImageCanva:
+    images: list[Image.Image]
     def __init__(
         self,
         Bitmap: Bitmap = None,
@@ -286,6 +287,20 @@ class ImageCanva:
 
         return cell_images
 
+    def resolve(self, pal_idx: int = 0):
+        assert (
+                self.Bitmap is not None and self.Palette is not None
+                ), "At least a palette and a bitmap are required"
+        if self.Cell is not None:
+            self.images = self.build_cells()
+        elif self.Tilemap is not None:
+            self.images = self.build_image_with_tilemap()
+        else:
+            if not self.linear:
+                self.images = self.build_hor_image(pal_idx)
+            else:
+                self.images = self.build_linear_image(pal_idx)
+
     def build_im(self, pal_idx: int = 0):
         """
         Build automatically the image(s) using the objects currently loaded in the Canva.
@@ -442,3 +457,9 @@ class ImageCanva:
         self.Bitmap.set_data(data)
         self.Bitmap.set_im_size(im.size)
         self.Palette.set_colors(get_image_colors(im))
+
+    @property
+    def im(self):
+        if not self.images:
+            raise Exception("No images found. Did you call .resolve() before?")
+        return self.images[0]

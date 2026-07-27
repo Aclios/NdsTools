@@ -27,10 +27,7 @@ class RawPalette(Palette):
         return self.colors
 
     def set_colors(self, colors: list[PaletteColor]):
-        if len(self.colors) > 0x100:
-            self.colors[:0x100] = colors
-        else:
-            self.colors = colors
+        self.colors = colors
 
     def to_bytes(self):
         f = EndianBinaryStreamWriter()

@@ -62,7 +62,7 @@ class Bitmap(File):
 
         :returns: A boolean: True if the pixels are stored linearly, False if they are stored in tiles.
         """
-        return False
+        pass
 
     def set_linear_flag(self, linear_flag: bool) -> None:
         """
@@ -70,3 +70,4 @@ class Bitmap(File):
 
         :param linear_flag: True if the pixels are stored linearly, False if they are stored in tiles.
         """
+        pass
