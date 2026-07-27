@@ -26,7 +26,7 @@ class NCLR(Palette):
     def get_bit_depth(self):
         return self.pltt.bit_depth
 
-    def set_colors(self, colors: list[int]):
+    def set_colors(self, colors: list[PaletteColor]):
         if len(self.pltt.colors) > 0x100:
             self.pltt.colors[:0x100] = colors
         else:

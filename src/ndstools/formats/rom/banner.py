@@ -71,6 +71,7 @@ class NDSBanner:
 
     def get_icon(self):
         canva = ImageCanva(
-            Bitmap=self.bitmap, Palette=self.palette, bit_depth=4, im_size=(32, 32)
+            bitmap=self.bitmap, palette=self.palette, bit_depth=4, im_size=(32, 32)
         )
-        return canva.build_im()[0]
+        canva.resolve()
+        return canva.image

@@ -202,14 +202,15 @@ class TexParameters:
             palette = RawPalette(self.palette_data)
 
         im = ImageCanva(
-            Bitmap=bitmap,
-            Palette=palette,
+            bitmap=bitmap,
+            palette=palette,
             bit_depth=self.format.bit_depth,
             im_size=(self.width, self.height),
             linear=True,
             transparency=transparency,
         )
-        return im.build_im()[0]
+        im.resolve()
+        return im.image
 
 
 class PaletteInfo:

@@ -13,6 +13,8 @@ class Tile:
     :params bit_depth: The bit depth of the tile data.
     """
 
+    linear: bool
+
     def __init__(self, in_data: bytes | Image.Image, bit_depth: int):
         self.bit_depth = bit_depth
 

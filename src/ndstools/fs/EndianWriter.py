@@ -1,10 +1,11 @@
 import struct
 from io import BytesIO
+from pathlib import Path
 
 
 class EndianBinaryWriter:
     def __init__(
-        self, filepath: str, endianness: str = "little"
+        self, filepath: str | Path, endianness: str = "little"
     ):  # should be overwritten
         self.set_endianness(endianness)
         self.filepath = filepath
@@ -60,7 +61,7 @@ class EndianBinaryWriter:
 
 
 class EndianBinaryFileWriter(EndianBinaryWriter):
-    def __init__(self, filepath: str, endianness: str = "little"):
+    def __init__(self, filepath: str | Path, endianness: str = "little"):
         self.set_endianness(endianness)
         self.filepath = filepath
         self.file = open(self.filepath, mode="wb")

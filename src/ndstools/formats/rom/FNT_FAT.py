@@ -53,7 +53,7 @@ class FNT:
         self._resolve_filetree()
 
     def _resolve_filetree(self):
-        self._resolve_directory(self.directories[0], ".")
+        self._resolve_directory(self.directories[0], Path("."))
 
     def _resolve_directory(self, dir: FNT_Directory, current_path: Path):
         dir._curr_file_idx = dir.file_start_idx

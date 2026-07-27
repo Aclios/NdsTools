@@ -4,8 +4,9 @@ from src.ndstools.formats.graphics import RawBitmap, ImageCanva, Palette
 from src.ndstools.formats.common import new_bw_palette, empty_im
 
 from enum import Enum
+from typing import Optional
 
-GLYPH_COLUMN_COUNT= 16
+GLYPH_COLUMN_COUNT = 16
 MAX_GLYPH_WIDTH = 16
 MAX_GLYPH_HEIGHT = 16
 
@@ -27,29 +28,36 @@ class NFTR(File):
         f.seek(self.finf.cwdh_offset)
         self.cwdh = NFTR_CWDH(f, self.cglp.glyph_count)
         f.seek(self.finf.cmap_offset)
-        #TODO Cmap section
+        # TODO Cmap section
 
-    def export_glyphs(self, out_path: str, palette: Palette = None):
+    def export_glyphs(self, out_path: str, palette: Optional[Palette] = None):
         row_count = self.cglp.glyph_count // GLYPH_COLUMN_COUNT
-        if (self.cglp.glyph_count % GLYPH_COLUMN_COUNT) != 0: row_count += 1
+        if (self.cglp.glyph_count % GLYPH_COLUMN_COUNT) != 0:
+            row_count += 1
         pal = palette if palette else new_bw_palette(self.cglp.bit_depth, inverted=True)
         im = empty_im(
             (GLYPH_COLUMN_COUNT * MAX_GLYPH_WIDTH, row_count * MAX_GLYPH_HEIGHT),
             pal.get_colors(),
             self.cglp.bit_depth,
-            True
+            True,
         )
         glyph_canva = ImageCanva(
-            Palette=pal,
+            palette=pal,
             im_size=(self.cglp.glyph_width, self.cglp.glyph_height),
             bit_depth=self.cglp.bit_depth,
             linear=True,
-            transparency=True
+            transparency=True,
         )
         for idx, glyph_data in enumerate(self.cglp.glyphes_data):
-            glyph_canva.load_Bitmap(RawBitmap(glyph_data))
+            glyph_canva.load_bitmap(RawBitmap(glyph_data))
             glyph_canva.resolve()
-            im.paste(glyph_canva.im, [MAX_GLYPH_WIDTH * (idx % GLYPH_COLUMN_COUNT), MAX_GLYPH_HEIGHT * (idx // GLYPH_COLUMN_COUNT)])
+            im.paste(
+                glyph_canva.image,
+                (
+                    MAX_GLYPH_WIDTH * (idx % GLYPH_COLUMN_COUNT),
+                    MAX_GLYPH_HEIGHT * (idx // GLYPH_COLUMN_COUNT),
+                ),
+            )
         im.save(out_path)
 
 
@@ -110,6 +118,7 @@ class NFTR_CWDH:
         self.last_index = f.read_UInt16()
         self.unk = f.read_UInt32()
         self.info = [GlyphInfo(f) for _ in range(glyph_count)]
+
 
 class GlyphInfo:
     def __init__(self, f: EndianBinaryReader):

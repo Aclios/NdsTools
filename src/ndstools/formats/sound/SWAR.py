@@ -64,7 +64,7 @@ class SWAREntry:
             write_pcm_wav(decoded_data, 16, self.samplerate, out_filepath)
 
 
-def write_pcm_wav(data: bytes, pcm: int, samplerate: int, filepath: str):
+def write_pcm_wav(data: bytes | bytearray, pcm: int, samplerate: int, filepath: str):
     with EndianBinaryFileWriter(filepath) as f:
         assert pcm in [8, 16]
         f.write(b"RIFF")

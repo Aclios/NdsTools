@@ -25,7 +25,7 @@ class NCGR(Bitmap):
     def get_data(self) -> bytes:
         return self.char.data
 
-    def get_im_size(self) -> tuple[int, int]:
+    def get_im_size(self) -> tuple[int, int] | None:
         if self.char.width != -1:
             return (self.char.width * 8, self.char.height * 8)
         else:

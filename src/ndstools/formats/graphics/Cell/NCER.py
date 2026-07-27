@@ -50,7 +50,7 @@ class NCER_CEBK:
         self.magic = f.check_magic(b"KBEC")
         self.section_size = f.read_UInt32()
         self.cell_count = f.read_UInt16()
-        self.extended_flag = f.read_UInt16()
+        self.extended_flag = bool(f.read_UInt16())
         self.data_offset = f.read_UInt32()
         flags = f.read_UInt32()
         self.tile_index_offset = (flags & 0b11) << 1
@@ -60,7 +60,7 @@ class NCER_CEBK:
 
         self.cells = [CEBK_Cell(f, self.extended_flag) for _ in range(self.cell_count)]
         for cell in self.cells:
-            cell.read_OAM_data(f)
+            cell.read_oam_data(f)
 
         if self.partition_data_offset:
             self.partition_start = f.read_UInt32()
@@ -72,7 +72,7 @@ class NCER_CEBK:
         cells_json = []
         for cell in self.cells:
             oams = []
-            for oam in cell.OAM_data_list:
+            for oam in cell.oam_data_list:
                 oams.append(
                     {
                         "Color depth": oam.color_depth,
@@ -108,7 +108,7 @@ class NCER_CEBK:
 
         data_offset = 0
         for cell in self.cells:
-            stream.write_UInt16(cell.OAM_count)
+            stream.write_UInt16(cell.oam_count)
             stream.write_UInt16(cell.unk)
             stream.write_UInt32(data_offset)
             if self.extended_flag:
@@ -116,10 +116,10 @@ class NCER_CEBK:
                 stream.write_Int16(cell.ymax)
                 stream.write_Int16(cell.xmin)
                 stream.write_Int16(cell.ymin)
-            data_offset += cell.OAM_count * 6
+            data_offset += cell.oam_count * 6
 
         for cell in self.cells:
-            for oam in cell.OAM_data_list:
+            for oam in cell.oam_data_list:
                 stream.write(oam.to_bytes())
 
         if self.partition_data_offset:
@@ -140,17 +140,17 @@ class CEBK_Cell:
 
     def __init__(self, f: EndianBinaryReader, extended_flag: bool):
         self.extended_flag = extended_flag
-        self.OAM_count = f.read_UInt16()
+        self.oam_count = f.read_UInt16()
         self.unk = f.read_UInt16()
-        self.OAM_offset = f.read_UInt32()
+        self.oam_offset = f.read_UInt32()
         if self.extended_flag:
             self.xmax = f.read_Int16()
             self.ymax = f.read_Int16()
             self.xmin = f.read_Int16()
             self.ymin = f.read_Int16()
 
-    def read_OAM_data(self, f: EndianBinaryReader):
-        self.OAM_data_list = [OAMData(f) for _ in range(self.OAM_count)]
+    def read_oam_data(self, f: EndianBinaryReader):
+        self.oam_data_list = [OAMData(f) for _ in range(self.oam_count)]
 
 
 class OAMData:
@@ -193,7 +193,7 @@ class OAMData:
             tile_offset = self.tile_index * tile_offset_start
         else:
             tile_offset = self.tile_index * tile_offset_start // 2
-        self.oam = OAM(self.size, tiles[tile_offset:], self.pal_idx, linear)
+        self.oam = OAM(tiles[tile_offset:], self.size, self.pal_idx, bit_depth, linear)
 
     def to_bytes(self):
         chunk0 = (
@@ -289,6 +289,7 @@ class NCER_UEXT:
         stream.write(self.magic)
         stream.write_UInt32(self.section_size)
         stream.write_UInt32(self.unk)
+        return stream.getvalue()
 
 
 OAM_SIZE_DICT = {

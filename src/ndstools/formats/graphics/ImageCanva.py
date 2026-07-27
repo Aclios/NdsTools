@@ -18,70 +18,71 @@ from src.ndstools.formats.common import (
 
 
 class ImageCanva:
-    images: list[Image.Image]
+    _images: list[Image.Image]
+
     def __init__(
         self,
-        Bitmap: Bitmap = None,
-        Palette: Palette = None,
-        Tilemap: Tilemap | NSCR = None,
-        Cell: NCER = None,
+        bitmap: Bitmap = None,
+        palette: Palette = None,
+        tilemap: Tilemap = None,
+        cell: NCER = None,
         bit_depth: int = None,
         im_size: tuple[int, int] = None,
-        OAM_size: tuple[int, int] = (8, 8),
+        oam_size: tuple[int, int] = (8, 8),
         transparency: bool = False,
         linear: bool = False,
     ):
 
-        self.load_Bitmap(Bitmap)
-        self.load_Palette(Palette)
-        self.load_Cell(Cell)
-        self.load_Tilemap(Tilemap)
+        self.load_bitmap(bitmap)
+        self.load_palette(palette)
+        self.load_cell(cell)
+        self.load_tilemap(tilemap)
 
         self.set_im_size(im_size)
-        self.set_OAM_size(OAM_size)
+        self.set_oam_size(oam_size)
         self.set_bit_depth(bit_depth)
         self.set_transparency(transparency)
         self.set_linear(linear)
 
-    def load_Bitmap(self, Bitmap: Bitmap):
+    def load_bitmap(self, bitmap: Bitmap):
         """
         Load a Bitmap object to the Canva, and set its parameters (bit depth, image size, linearity) if they exist.
 
         :params Bitmap: A Bitmap object.
         """
-        self.Bitmap = Bitmap
-        if Bitmap is not None:
-            self.set_bit_depth(self.Bitmap.get_bit_depth())
-            self.set_im_size(self.Bitmap.get_im_size())
-            self.set_linear(self.Bitmap.get_linear_flag())
+        self.bitmap = bitmap
+        if bitmap is not None:
+            self.set_bit_depth(self.bitmap.get_bit_depth())
+            self.set_im_size(self.bitmap.get_im_size())
+            self.set_linear(self.bitmap.get_linear_flag())
 
-    def load_Tilemap(self, Tilemap: Tilemap):
+    def load_tilemap(self, tilemap: Tilemap):
         """
         Load a Tilemap object to the Canva, and set its parameters (image size) if they exist.
 
         :params Tilemap: A Tilemap object.
         """
-        self.Tilemap = Tilemap
-        if Tilemap is not None:
-            self.set_im_size(self.Tilemap.get_im_size())
+        self.tilemap = tilemap
+        if tilemap is not None:
+            self.set_im_size(self.tilemap.get_im_size())
 
-    def load_Palette(self, Palette: Palette):
+    def load_palette(self, palette: Palette):
         """
         Load a Palette object to the Canva, and set its parameters (bit depth) if they exist.
 
         :params Palette: A Palette object.
         """
-        self.Palette = Palette
-        if Palette is not None:
-            self.set_bit_depth(self.Palette.get_bit_depth())
+        self.palette = palette
+        if palette is not None:
+            self.set_bit_depth(self.palette.get_bit_depth())
 
-    def load_Cell(self, Cell: NCER):
+    def load_cell(self, cell: NCER):
         """
         Load a Cell object to the Canva.
 
         :params Cell: A NCER object.
         """
-        self.Cell = Cell
+        self.cell = cell
 
     def set_im_size(self, im_size: tuple[int, int]):
         """
@@ -95,7 +96,7 @@ class ImageCanva:
             self.im_size = im_size
             self.im_width, self.im_height = im_size
 
-    def set_OAM_size(self, OAM_size: tuple[int, int]):
+    def set_oam_size(self, oam_size: tuple[int, int]):
         """
         Set the OAM size of the Canva.
 
@@ -103,9 +104,9 @@ class ImageCanva:
 
         :params im_size: A tuple (OAM_width, OAM_height).
         """
-        if OAM_size is not None:
-            self.OAM_size = OAM_size
-            self.OAM_width, self.OAM_height = OAM_size
+        if oam_size is not None:
+            self.oam_size = oam_size
+            self.oam_width, self.oam_height = oam_size
 
     def set_bit_depth(self, bit_depth: int):
         """
@@ -153,7 +154,7 @@ class ImageCanva:
         Generate tiles from the loaded Bitmap.
         """
         tile_datasize = self.bit_depth * 8
-        data = self.Bitmap.get_data()
+        data = self.bitmap.get_data()
         tile_count = len(data) // tile_datasize
         tiles = [
             Tile(data[tile_datasize * idx : tile_datasize * (idx + 1)], self.bit_depth)
@@ -161,35 +162,35 @@ class ImageCanva:
         ]
         return tiles
 
-    def build_hor_image(self, pal_idx: int = 0):
+    def _build_hor_image(self, pal_idx: int = 0):
         """
         Build a tiled image, by solely using a Bitmap and a Palette.
 
         :params pal_idx: The index of the subpalette the image should follow. It is useful if the same Bitmap has several colorings,
         for example for an animation.
         """
-        OAM_width_count = self.im_width // self.OAM_width
-        OAM_height_count = self.im_height // self.OAM_height
+        oam_width_count = self.im_width // self.oam_width
+        oam_height_count = self.im_height // self.oam_height
         im = empty_im(
-            self.im_size, self.Palette.get_colors(), self.bit_depth, self.transparency
+            self.im_size, self.palette.get_colors(), self.bit_depth, self.transparency
         )
         tile_idx = 0
         tiles = self.generate_tile_list()
-        tile_count_par_OAM = (self.OAM_width // 8) * (self.OAM_height // 8)
-        for j in range(OAM_height_count):
-            for i in range(OAM_width_count):
+        tile_count_per_oam = (self.oam_width // 8) * (self.oam_height // 8)
+        for j in range(oam_height_count):
+            for i in range(oam_width_count):
                 oam = OAM(
-                    tiles[tile_idx : tile_idx + tile_count_par_OAM],
-                    self.OAM_size,
+                    tiles[tile_idx : tile_idx + tile_count_per_oam],
+                    self.oam_size,
                     pal_idx,
                     self.bit_depth,
                     False,
                 )
-                tile_idx += tile_count_par_OAM
-                im.paste(oam.image, (i * self.OAM_width, j * self.OAM_height))
+                tile_idx += tile_count_per_oam
+                im.paste(oam.image, (i * self.oam_width, j * self.oam_height))
         return [im]
 
-    def build_linear_image(self, pal_idx: int):
+    def _build_linear_image(self, pal_idx: int):
         """
         Build a linear image, by solely using a Bitmap and a Palette.
 
@@ -197,23 +198,23 @@ class ImageCanva:
         for example for an animation.
         """
         im = empty_im(
-            self.im_size, self.Palette.get_colors(), self.bit_depth, self.transparency
+            self.im_size, self.palette.get_colors(), self.bit_depth, self.transparency
         )
         eightbpp_data = convert_to_eightbpp(
-            self.Bitmap.get_data(), self.bit_depth, pal_idx
+            self.bitmap.get_data(), self.bit_depth, pal_idx
         )
         im.putdata(eightbpp_data[: self.im_width * self.im_height])
         return [im]
 
-    def build_image_with_tilemap(self):
+    def _build_image_with_tilemap(self):
         """
         Build an image, by using a Bitmap, a Palette, and a Tilemap.
         """
         im = empty_im(
-            self.im_size, self.Palette.get_colors(), self.bit_depth, self.transparency
+            self.im_size, self.palette.get_colors(), self.bit_depth, self.transparency
         )
         tiles = self.generate_tile_list()
-        maps = iter(self.Tilemap.get_mapdata())
+        maps = iter(self.tilemap.get_mapdata())
         for j in range(im.height // 8):
             for i in range(im.width // 8):
                 map = next(maps)
@@ -221,34 +222,34 @@ class ImageCanva:
                 im.paste(tile_im, (i * 8, j * 8))
         return [im]
 
-    def build_cells(self):
+    def _build_cells(self):
         """
         Build the different frames defined by a Cell, using a Bitmap and a Palette.
         """
         tiles = self.generate_tile_list()
         cell_images = []
-        for cell_bank in self.Cell.cebk.cells:
-            if len(cell_bank.OAM_data_list) == 0:
+        for cell_bank in self.cell.cebk.cells:
+            if len(cell_bank.oam_data_list) == 0:
                 cell_images.append(None)
                 continue
 
-            min_x = min([OAM_data.x_pos for OAM_data in cell_bank.OAM_data_list])
-            min_y = min([OAM_data.y_pos for OAM_data in cell_bank.OAM_data_list])
+            min_x = min([oam_data.x_pos for oam_data in cell_bank.oam_data_list])
+            min_y = min([oam_data.y_pos for oam_data in cell_bank.oam_data_list])
             max_x = max(
                 [
-                    OAM_data.x_pos + OAM_data.size[0]
-                    for OAM_data in cell_bank.OAM_data_list
+                    oam_data.x_pos + oam_data.size[0]
+                    for oam_data in cell_bank.oam_data_list
                 ]
             )
             max_y = max(
                 [
-                    OAM_data.y_pos + OAM_data.size[1]
-                    for OAM_data in cell_bank.OAM_data_list
+                    oam_data.y_pos + oam_data.size[1]
+                    for oam_data in cell_bank.oam_data_list
                 ]
             )
             cell_im_size = (max_x - min_x, max_y - min_y)
             cell_im = empty_im(
-                cell_im_size, self.Palette.get_colors(), self.bit_depth, True
+                cell_im_size, self.palette.get_colors(), self.bit_depth, True
             )
 
             if self.bit_depth == 4:
@@ -256,31 +257,31 @@ class ImageCanva:
             else:
                 transparency_idx = [0]
 
-            for OAM_data in cell_bank.OAM_data_list[::-1]:
+            for oam_data in cell_bank.oam_data_list[::-1]:
                 if self.bit_depth == 4:
-                    tile_offset = OAM_data.tile_index * self.Cell.cebk.tile_index_offset
+                    tile_offset = oam_data.tile_index * self.cell.cebk.tile_index_offset
                 else:
                     tile_offset = (
-                        OAM_data.tile_index * self.Cell.cebk.tile_index_offset // 2
+                        oam_data.tile_index * self.cell.cebk.tile_index_offset // 2
                     )
 
                 oam = OAM(
                     tiles[tile_offset:],
-                    OAM_data.size,
-                    OAM_data.pal_idx,
+                    oam_data.size,
+                    oam_data.pal_idx,
                     self.bit_depth,
                     self.linear,
                 )
-                OAM_im = oam.image
-                if OAM_data.ver_flip:
-                    OAM_im = OAM_im.transpose(Image.FLIP_TOP_BOTTOM)
-                if OAM_data.hor_flip:
-                    OAM_im = OAM_im.transpose(Image.FLIP_LEFT_RIGHT)
+                oam_im = oam.image
+                if oam_data.ver_flip:
+                    oam_im = oam_im.transpose(Image.FLIP_TOP_BOTTOM)
+                if oam_data.hor_flip:
+                    oam_im = oam_im.transpose(Image.FLIP_LEFT_RIGHT)
 
                 cell_im = paste_alpha(
                     cell_im,
-                    OAM_im,
-                    (OAM_data.x_pos - min_x, OAM_data.y_pos - min_y),
+                    oam_im,
+                    (oam_data.x_pos - min_x, oam_data.y_pos - min_y),
                     transparency_idx,
                 )
             cell_images.append(cell_im)
@@ -288,38 +289,25 @@ class ImageCanva:
         return cell_images
 
     def resolve(self, pal_idx: int = 0):
-        assert (
-                self.Bitmap is not None and self.Palette is not None
-                ), "At least a palette and a bitmap are required"
-        if self.Cell is not None:
-            self.images = self.build_cells()
-        elif self.Tilemap is not None:
-            self.images = self.build_image_with_tilemap()
-        else:
-            if not self.linear:
-                self.images = self.build_hor_image(pal_idx)
-            else:
-                self.images = self.build_linear_image(pal_idx)
-
-    def build_im(self, pal_idx: int = 0):
         """
         Build automatically the image(s) using the objects currently loaded in the Canva.
+        You can later get them with the .images property.
 
         :params pal_idx: The index of the subpalette the image should follow. It is useful if the same Bitmap has several colorings,
         for example for an animation. It isn't used if there is a Tilemap or a Cell object.
         """
         assert (
-            self.Bitmap is not None and self.Palette is not None
+            self.bitmap is not None and self.palette is not None
         ), "At least a palette and a bitmap are required"
-        if self.Cell is not None:
-            return self.build_cells()
-        elif self.Tilemap is not None:
-            return self.build_image_with_tilemap()
+        if self.cell is not None:
+            self._images = self._build_cells()
+        elif self.tilemap is not None:
+            self._images = self._build_image_with_tilemap()
         else:
             if not self.linear:
-                return self.build_hor_image(pal_idx)
+                self._images = self._build_hor_image(pal_idx)
             else:
-                return self.build_linear_image(pal_idx)
+                self._images = self._build_linear_image(pal_idx)
 
     def import_image(self, im_filepath: str, cell_idx: int = 0):
         im = Image.open(im_filepath)
@@ -327,19 +315,19 @@ class ImageCanva:
             im.mode == "P"
         ), "Invalid png type, pyNitro is expecting a color indexed png."
         assert (
-            self.Bitmap is not None and self.Palette is not None
+            self.bitmap is not None and self.palette is not None
         ), "At least a palette and a bitmap are required"
-        if self.Cell is not None:
-            self.import_cell(im, cell_idx)
-        elif self.Tilemap is not None:
-            self.import_image_with_tilemap(im)
+        if self.cell is not None:
+            self._import_cell(im, cell_idx)
+        elif self.tilemap is not None:
+            self._import_image_with_tilemap(im)
         else:
             if not self.linear:
-                self.import_hor_image(im)
+                self._import_hor_image(im)
             else:
-                self.import_linear_image(im)
+                self._import_linear_image(im)
 
-    def import_cell(self, im: Image.Image, cell_idx: int):
+    def _import_cell(self, im: Image.Image, cell_idx: int):
         """
         Import an image to a cell.
 
@@ -347,32 +335,32 @@ class ImageCanva:
         :params cell_idx: The cell index.
         """
         self.tiles = self.generate_tile_list()
-        cell = self.Cell.cebk.cells[cell_idx]
-        min_x = min([OAM_data.x_pos for OAM_data in cell.OAM_data_list])
-        min_y = min([OAM_data.y_pos for OAM_data in cell.OAM_data_list])
+        cell = self.cell.cebk.cells[cell_idx]
+        min_x = min([oam_data.x_pos for oam_data in cell.oam_data_list])
+        min_y = min([oam_data.y_pos for oam_data in cell.oam_data_list])
 
-        for OAM_data in cell.OAM_data_list:
+        for oam_data in cell.oam_data_list:
             oam = OAM(
                 im.crop(
                     (
-                        OAM_data.x_pos - min_x,
-                        OAM_data.y_pos - min_y,
-                        OAM_data.x_pos + OAM_data.oam.width - min_x,
-                        OAM_data.y_pos + OAM_data.oam.height - min_y,
+                        oam_data.x_pos - min_x,
+                        oam_data.y_pos - min_y,
+                        oam_data.x_pos + oam_data.oam.width - min_x,
+                        oam_data.y_pos + oam_data.oam.height - min_y,
                     )
                 ),
-                OAM_data.size,
-                OAM_data.pal_idx,
+                oam_data.size,
+                oam_data.pal_idx,
                 self.bit_depth,
                 self.linear,
             )
-            new_tiles = OAM.get_tiles()
+            new_tiles = oam.get_tiles()
 
             if self.bit_depth == 4:
-                tile_offset = OAM_data.tile_index * self.Cell.cebk.tile_index_offset
+                tile_offset = oam_data.tile_index * self.cell.cebk.tile_index_offset
             else:
                 tile_offset = (
-                    OAM_data.tile_index * self.Cell.cebk.tile_index_offset // 2
+                    oam_data.tile_index * self.cell.cebk.tile_index_offset // 2
                 )
 
             self.tiles[tile_offset : tile_offset + oam.tile_count] = new_tiles
@@ -381,10 +369,10 @@ class ImageCanva:
         for tile in self.tiles:
             newdata += tile.to_bytes()
 
-        self.Bitmap.set_data(newdata)
-        self.Palette.set_colors(get_image_colors(im))
+        self.bitmap.set_data(newdata)
+        self.palette.set_colors(get_image_colors(im))
 
-    def import_image_with_tilemap(self, im: Image.Image):
+    def _import_image_with_tilemap(self, im: Image.Image):
         """
         Import an image that use a tilemap.
 
@@ -414,52 +402,58 @@ class ImageCanva:
                 mapdata.pal_idx = pal_idx
                 mapinfos.append(mapdata)
 
-        self.Bitmap.set_data(data)
-        self.Palette.set_colors(get_image_colors(im))
-        self.Tilemap.set_mapdata(mapinfos)
-        self.Tilemap.set_im_size(im.size)
+        self.bitmap.set_data(data)
+        self.palette.set_colors(get_image_colors(im))
+        self.tilemap.set_mapdata(mapinfos)
+        self.tilemap.set_im_size(im.size)
 
-    def import_hor_image(self, im: Image.Image):
+    def _import_hor_image(self, im: Image.Image):
         """
         Import an tiled image that only use a bitmap and a palette.
 
         :params im: The Image.
         """
         data = bytearray()
-        for j in range(im.height // self.OAM_height):
-            for i in range(im.width // self.OAM_width):
+        for j in range(im.height // self.oam_height):
+            for i in range(im.width // self.oam_width):
                 oam = OAM(
                     im.crop(
                         (
-                            i * self.OAM_width,
-                            j * self.OAM_height,
-                            (i + 1) * self.OAM_width,
-                            (j + 1) * self.OAM_height,
+                            i * self.oam_width,
+                            j * self.oam_height,
+                            (i + 1) * self.oam_width,
+                            (j + 1) * self.oam_height,
                         )
                     ),
-                    self.OAM_size,
+                    self.oam_size,
                     0,
                     self.bit_depth,
                     False,
                 )
                 data += oam.to_bytes()
-        self.Bitmap.set_data(data)
-        self.Bitmap.set_im_size(im.size)
-        self.Palette.set_colors(get_image_colors(im))
+        self.bitmap.set_data(data)
+        self.bitmap.set_im_size(im.size)
+        self.palette.set_colors(get_image_colors(im))
 
-    def import_linear_image(self, im: Image.Image):
+    def _import_linear_image(self, im: Image.Image):
         """
         Import an linear image that only use a bitmap and a palette.
 
         :params im: The Image.
         """
         data = convert_from_eightbpp(im.tobytes(), self.bit_depth)
-        self.Bitmap.set_data(data)
-        self.Bitmap.set_im_size(im.size)
-        self.Palette.set_colors(get_image_colors(im))
+        self.bitmap.set_data(data)
+        self.bitmap.set_im_size(im.size)
+        self.palette.set_colors(get_image_colors(im))
 
     @property
-    def im(self):
-        if not self.images:
+    def image(self):
+        if not self._images:
             raise Exception("No images found. Did you call .resolve() before?")
-        return self.images[0]
+        return self._images[0]
+
+    @property
+    def images(self):
+        if not self._images:
+            raise Exception("No images found. Did you call .resolve() before?")
+        return self._images

@@ -152,8 +152,9 @@ def paste_alpha(
     src_im.paste(src_region, region)
     return src_im
 
+
 def new_bw_palette(bit_depth: int, inverted: bool = False):
-    num_colors = None
+    num_colors = 4
     match bit_depth:
         case 2:
             num_colors = 4
@@ -161,8 +162,8 @@ def new_bw_palette(bit_depth: int, inverted: bool = False):
             num_colors = 16
         case 8:
             num_colors = 256
-    pal = RawPalette(b'')
-    step = 255 / (num_colors  - 1)
+    pal = RawPalette(b"")
+    step = 255 / (num_colors - 1)
     colors = []
     for i in range(num_colors):
         colors.append(PaletteColor.from_list([int(i * step)] * 3))
@@ -171,9 +172,10 @@ def new_bw_palette(bit_depth: int, inverted: bool = False):
     pal.set_colors(colors)
     return pal
 
+
 def texel_decompress(
     data: bytes, info: bytes, colors: list[PaletteColor], im_size: tuple[int, int]
-) -> Tuple[bytes, List[int]]:
+) -> Tuple[bytearray, List[PaletteColor]]:
     # TODO: remove palette stuff in this and move the function in the models folder
 
     def get_rgb(pal_index: int):
@@ -249,7 +251,7 @@ def texel_decompress(
                         new_colors.append(pix_colors)
                     out_data[(hTex + j) * width + wTex + i] = val
     new_colors[0] = [0, 0, 0]
-    out_colors = []
-    for colors in new_colors:
-        out_colors.extend(colors)
+    out_colors: List[PaletteColor] = []
+    for _colors in new_colors:
+        out_colors.append(PaletteColor.from_list(_colors))
     return out_data, out_colors

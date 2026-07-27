@@ -9,7 +9,7 @@ class MapData:
     The MapData object contains the info of a tile of a mapped image: tile index, palette index, and rotation flags.
     """
 
-    def __init__(self, f: EndianBinaryReader = None):
+    def __init__(self, f: EndianBinaryReader | None = None):
         self.flip_top_bottom = False
         self.flip_left_right = False
         if f is not None:
@@ -63,7 +63,7 @@ class Tilemap(File):
 
         :returns: A list of MapData objects.
         """
-        pass
+        raise Exception("Not implemented")
 
     def set_mapdata(self, mapdata: list[MapData]):
         """
@@ -73,7 +73,7 @@ class Tilemap(File):
         """
         pass
 
-    def get_im_size(self) -> tuple[int, int]:
+    def get_im_size(self) -> tuple[int, int] | None:
         """
         Returns the image size of the file (if it's defined).
 

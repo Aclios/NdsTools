@@ -1,10 +1,11 @@
 import struct
 from io import BytesIO
+from pathlib import Path
 
 
 class EndianBinaryReader:
     def __init__(
-        self, filepath: str, endianness: str = "little"
+        self, filepath: str | Path, endianness: str = "little"
     ):  # should be overwritten
         self.set_endianness(endianness)
         self.filepath = filepath
@@ -12,7 +13,6 @@ class EndianBinaryReader:
         self.read = self.file.read
         self.tell = self.file.tell
         self.seek = self.file.seek
-        self.peek = self.file.peek
 
     def set_endianness(self, endianness: str):
         if endianness == "little":
@@ -78,7 +78,7 @@ class EndianBinaryReader:
 
 
 class EndianBinaryFileReader(EndianBinaryReader):
-    def __init__(self, filepath: str, endianness: str = "little"):
+    def __init__(self, filepath: str | Path, endianness: str = "little"):
         self.set_endianness(endianness)
         self.filepath = filepath
         self.file = open(self.filepath, mode="rb")

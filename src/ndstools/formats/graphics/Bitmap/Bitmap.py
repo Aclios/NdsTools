@@ -14,9 +14,9 @@ class Bitmap(File):
 
         :returns: A bytes stream representing the palette indexes of the pixels of the image.
         """
-        pass
+        raise Exception("Not implemented")
 
-    def set_data(self, data: bytes) -> None:
+    def set_data(self, data: bytes | bytearray) -> None:
         """
         Set the bitmap data of the file.
 
@@ -24,7 +24,7 @@ class Bitmap(File):
         """
         pass
 
-    def get_im_size(self) -> tuple[int, int]:
+    def get_im_size(self) -> tuple[int, int] | None:
         """
         Returns the image size of the file (if it's defined).
 
@@ -40,7 +40,7 @@ class Bitmap(File):
         """
         pass
 
-    def get_bit_depth(self) -> int:
+    def get_bit_depth(self) -> int | None:
         """
         Returns the bit depth of the file (if it's defined).
 
@@ -56,7 +56,7 @@ class Bitmap(File):
         """
         pass
 
-    def get_linear_flag(self) -> bool:
+    def get_linear_flag(self) -> bool | None:
         """
         Returns whether the pixels are stored linearly (ie, if the image in untiled and the pixels are stored left to right top to bottom), or not.
 

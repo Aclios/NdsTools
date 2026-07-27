@@ -61,7 +61,7 @@ class Palette(File):
 
         :returns: A list of PaletteColor.
         """
-        pass
+        raise Exception("Not implemented")
 
     def set_colors(self, colors: List[PaletteColor]):
         """
@@ -80,7 +80,7 @@ class Palette(File):
     def set_colors_with_im_list(self, colors: List[int]):
         pass
 
-    def get_bit_depth(self) -> int:
+    def get_bit_depth(self) -> int | None:
         """
         Returns the bit depth of the file (if it's defined).
 
