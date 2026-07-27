@@ -1,5 +1,5 @@
 from src.ndstools.fs import EndianBinaryStreamReader, EndianBinaryStreamWriter
-from src.ndstools.formats.graphics.Tilemap.Tilemap import Tilemap, MapData
+from .tilemap import Tilemap, MapData
 
 
 class RawTilemap(Tilemap):

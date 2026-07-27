@@ -1,5 +1,5 @@
 from src.ndstools.fs import EndianBinaryReader
-from src.ndstools.formats.File import File, NitroHeader
+from src.ndstools.formats.file import File, NitroHeader
 from .tex0 import TEX0
 
 

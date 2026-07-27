@@ -1,5 +1,5 @@
 from src.ndstools.fs import EndianBinaryReader
-from src.ndstools.formats.File import File, NitroHeader
+from src.ndstools.formats.file import File, NitroHeader
 from src.ndstools.formats.graphics import RawBitmap, ImageCanva, Palette
 from src.ndstools.formats.common import new_bw_palette, empty_im
 

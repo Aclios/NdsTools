@@ -1,6 +1,6 @@
 from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
-from src.ndstools.formats.graphics.Tilemap.Tilemap import Tilemap, MapData
-from src.ndstools.formats.File import NitroHeader
+from .tilemap import Tilemap, MapData
+from src.ndstools.formats.file import NitroHeader
 
 
 class NSCR(Tilemap):

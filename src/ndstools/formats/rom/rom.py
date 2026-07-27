@@ -1,5 +1,5 @@
 from src.ndstools.fs import EndianBinaryReader
-from src.ndstools.formats.File import File
+from src.ndstools.formats.file import File
 from .fntfat import FNT, FAT
 from .overlay import Overlay
 from .arm9 import ARM9

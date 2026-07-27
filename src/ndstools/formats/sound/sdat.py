@@ -1,8 +1,8 @@
 from src.ndstools.fs import EndianBinaryReader
-from src.ndstools.formats.File import File, NitroHeader
+from src.ndstools.formats.file import File, NitroHeader
 import os
 from pathlib import Path
-from .SWAR import SWAR
+from .swar import SWAR
 
 
 class SDAT(File):
