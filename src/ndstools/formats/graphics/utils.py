@@ -94,8 +94,10 @@ def empty_im(
     transparency: bool,
 ):
     im = Image.new(mode="P", size=im_size)
-
-    im.putpalette([i for color in colors for i in color.to_int_list()])
+    colors = [i for color in colors for i in color.to_int_list()]
+    if len(colors) > 0x300:
+        colors = colors[0:0x300]
+    im.putpalette(colors)
     if transparency:
         if bit_depth == 2:
             im.info["transparency"] = (b"\x00" + b"\xff" * 3) * 64
