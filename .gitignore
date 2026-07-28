@@ -1,6 +1,6 @@
 __pycache__
 tests
-test.py
+/*.py
 docs/build
 docs
 dist

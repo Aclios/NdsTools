@@ -60,6 +60,7 @@ class NDSRom(File):
         self.secureCardCtlRegSettings = f.read_UInt32()
 
         self.banner_offset = f.read_UInt32()
+        self.has_banner = bool(self.banner_offset)
         self.secure_area_checksum = f.read_UInt16()
         self.secure_transfer_delay = f.read_UInt16()
         self.arm9_settings_address = f.read_UInt32()
@@ -117,8 +118,9 @@ class NDSRom(File):
             Overlay(f) for _ in range(len(self.arm7_ov_table_data) // 0x20)
         ]
 
-        f.seek(self.banner_offset)
-        self.banner = NDSBanner(f)
+        if self.has_banner:
+            f.seek(self.banner_offset)
+            self.banner = NDSBanner(f)
 
         self._load_files_and_overlays(f)
 
@@ -172,4 +174,5 @@ class NDSRom(File):
                 overlay7.get_data()
             )
 
-        self.banner.icon.save(Path(out_dir, "icon.png"))
+        if self.has_banner:
+            self.banner.icon.save(Path(out_dir, "icon.png"))

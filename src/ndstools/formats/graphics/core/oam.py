@@ -1,5 +1,5 @@
 from PIL import Image
-from ndstools.formats.graphics.core.tile import Tile
+from src.ndstools.formats.graphics.core.tile import Tile
 from src.ndstools.formats.graphics.utils import convert_from_eightbpp
 
 
