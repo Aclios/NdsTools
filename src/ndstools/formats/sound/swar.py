@@ -1,29 +1,26 @@
-from src.ndstools.fs import EndianBinaryReader, EndianBinaryFileWriter
+from src.ndstools.fs import EndianBinaryReader
 from src.ndstools.formats.file import File, NitroHeader
-from .adpcm import decode_block
+from .swav import AudioData
 
 from pathlib import Path
-import os
 
 
 class SWAR(File):
     """
-    Load a SWAR file (Sound WAve Resource(?)), which contains one or several sound effects.
-    They can be coded in three different codecs: 8PCM, 16PCM, or ADPCM.
+    A SWAR file is an archive for sound effects.
     """
 
     def read(self, f: EndianBinaryReader):
         self.header = NitroHeader(f, b"SWAR")
-        self.data = SWARDATA(f)
+        self.data = SWAR_DATA(f)
 
-    def extract(self, out_dir):
+    def extract(self, out_dir: str):
+        Path(out_dir).mkdir(exist_ok=True, parents=True)
         for idx, entry in enumerate(self.data.entries):
-            if not os.path.exists(out_dir):
-                os.makedirs(out_dir)
             entry.to_wav(Path(out_dir) / f"swav_{idx}.wav")
 
 
-class SWARDATA:
+class SWAR_DATA:
     def __init__(self, f: EndianBinaryReader):
         f.check_magic(b"DATA")
         self.size = f.read_Int32()
@@ -35,61 +32,7 @@ class SWARDATA:
             self.entry_size.append(self.entry_offsets[i + 1] - self.entry_offsets[i])
         if self.entry_count > 0:
             self.entry_size.append(self.size - self.entry_offsets[-1])
-        self.entries: list[SWAREntry] = []
+        self.entries: list[AudioData] = []
         for i in range(self.entry_count):
             f.seek(self.entry_offsets[i])
-            entry = SWAREntry(f)
-            entry.data = f.read(self.entry_size[i])
-            self.entries.append(entry)
-
-
-class SWAREntry:
-    data: bytes
-
-    def __init__(self, f: EndianBinaryReader):
-        self.type = f.read_UInt8()
-        self.loop = f.read_UInt8()
-        self.samplerate = f.read_UInt16()
-        self.time = f.read_UInt16()
-        self.loop_offset = f.read_UInt16()
-        self.nonloop_size = f.read_UInt32()
-
-    def to_wav(self, out_filepath):
-        if self.type == 0:  # PCM8
-            write_pcm_wav(self.data, 8, self.samplerate, out_filepath)
-        elif self.type == 1:  # PCM16
-            write_pcm_wav(self.data, 16, self.samplerate, out_filepath)
-        else:  # ADPCM
-            decoded_data = decode_block(self.data)
-            write_pcm_wav(decoded_data, 16, self.samplerate, out_filepath)
-
-
-def write_pcm_wav(data: bytes | bytearray, pcm: int, samplerate: int, filepath: str):
-    with EndianBinaryFileWriter(filepath) as f:
-        assert pcm in [8, 16]
-        f.write(b"RIFF")
-        if pcm == 16:
-            f.write_Int32(44 + len(data) - 8)
-        elif pcm == 8:
-            f.write_Int32(44 + 2 * len(data) - 8)
-        f.write(b"WAVEfmt ")
-        f.write_Int32(0x10)
-        f.write_Int16(1)
-        f.write_Int16(1)
-        f.write_Int32(samplerate)
-        f.write_Int32(samplerate * 0x10 // 8)
-        f.write_Int16(0x10 // 8)
-        f.write_Int16(0x10)
-        f.write(b"data")
-        if pcm == 16:
-            f.write_Int32(len(data))
-            f.write(data)
-        elif pcm == 8:
-            f.write_Int32(len(data) * 2)
-            for byte in data:
-                if byte > 0x80:
-                    f.write_UInt8(1)
-                else:
-                    f.write_UInt8(0)
-                f.write_UInt8(byte)
-
+            self.entries.append(AudioData(f, self.entry_size[i]))

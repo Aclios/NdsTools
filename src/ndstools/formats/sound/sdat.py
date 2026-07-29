@@ -35,6 +35,7 @@ class SDAT(File):
         self.fat = SDAT_FAT(f)
 
     def unpack(self, out_dir: str):
+        """
         if not (Path(out_dir) / "SSEQ").exists():
             os.makedirs(Path(out_dir) / "SSEQ")
 
@@ -43,9 +44,6 @@ class SDAT(File):
 
         if not (Path(out_dir) / "SBNK").exists():
             os.makedirs(Path(out_dir) / "SBNK")
-
-        if not (Path(out_dir) / "SWAR").exists():
-            os.makedirs(Path(out_dir) / "SWAR")
 
         if not (Path(out_dir) / "STRM").exists():
             os.makedirs(Path(out_dir) / "STRM")
@@ -65,16 +63,18 @@ class SDAT(File):
             data = self.fat.entries[sbnk_info.id].data
             open(Path(out_dir) / "SBNK" / (name + ".sbnk"), "wb").write(data)
 
+        for idx, strm_info in enumerate(self.info.strm_info):
+            name = self.symb.strm_names[idx]
+            data = self.fat.entries[strm_info.id].data
+            open(Path(out_dir) / "STRM" / (name + ".strm"), "wb").write(data)
+        """
+
+        Path(out_dir, "SWAR").mkdir(exist_ok=True, parents=True)
         for idx, swar_info in enumerate(self.info.swar_info):
             name = self.symb.swar_names[idx]
             data = self.fat.entries[swar_info.id].data
             swar = SWAR(data)
             swar.extract(Path(out_dir) / "SWAR" / name)
-
-        for idx, strm_info in enumerate(self.info.strm_info):
-            name = self.symb.strm_names[idx]
-            data = self.fat.entries[strm_info.id].data
-            open(Path(out_dir) / "STRM" / (name + ".strm"), "wb").write(data)
 
 
 class SDAT_SYMB:
