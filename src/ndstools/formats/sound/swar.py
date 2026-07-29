@@ -68,15 +68,28 @@ def write_pcm_wav(data: bytes | bytearray, pcm: int, samplerate: int, filepath: 
     with EndianBinaryFileWriter(filepath) as f:
         assert pcm in [8, 16]
         f.write(b"RIFF")
-        f.write_Int32(44 + len(data) - 8)
+        if pcm == 16:
+            f.write_Int32(44 + len(data) - 8)
+        elif pcm == 8:
+            f.write_Int32(44 + 2 * len(data) - 8)
         f.write(b"WAVEfmt ")
         f.write_Int32(0x10)
         f.write_Int16(1)
         f.write_Int16(1)
         f.write_Int32(samplerate)
-        f.write_Int32(samplerate * pcm // 8)
-        f.write_Int16(pcm // 8)
-        f.write_Int16(pcm)
+        f.write_Int32(samplerate * 0x10 // 8)
+        f.write_Int16(0x10 // 8)
+        f.write_Int16(0x10)
         f.write(b"data")
-        f.write_Int32(len(data))
-        f.write(data)
+        if pcm == 16:
+            f.write_Int32(len(data))
+            f.write(data)
+        elif pcm == 8:
+            f.write_Int32(len(data) * 2)
+            for byte in data:
+                if byte > 0x80:
+                    f.write_UInt8(1)
+                else:
+                    f.write_UInt8(0)
+                f.write_UInt8(byte)
+
