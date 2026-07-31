@@ -73,3 +73,18 @@ class NDSBanner:
     @staticmethod
     def read_name(f: EndianBinaryReader):
         return f.read(0x100).decode("utf-16").strip("\0")
+
+    def get_names(self):
+        names = {
+            "Japanese": self.japanese,
+            "English": self.english,
+            "French": self.french,
+            "German": self.german,
+            "Italian": self.italian,
+            "Spanish": self.spanish,
+        }
+        if self.chinese:
+            names["Chinese"] = self.chinese
+        if self.korean:
+            names["Korean"] = self.korean
+        return names
