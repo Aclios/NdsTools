@@ -1,9 +1,9 @@
-from src.ndstools.fs.endian_reader import (
+from ndstools.fs.endian_reader import (
     EndianBinaryFileReader,
     EndianBinaryStreamReader,
     EndianBinaryReader,
 )
-from src.ndstools.fs.endian_writer import (
+from ndstools.fs.endian_writer import (
     EndianBinaryFileWriter,
     EndianBinaryStreamWriter,
     EndianBinaryWriter,

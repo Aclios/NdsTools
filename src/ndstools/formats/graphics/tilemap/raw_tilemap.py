@@ -1,4 +1,4 @@
-from src.ndstools.fs import EndianBinaryStreamReader, EndianBinaryStreamWriter
+from ndstools.fs import EndianBinaryStreamReader, EndianBinaryStreamWriter
 from .tilemap import Tilemap, MapData
 
 

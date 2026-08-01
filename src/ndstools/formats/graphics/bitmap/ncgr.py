@@ -1,7 +1,7 @@
-from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
+from ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
 from .bitmap import Bitmap
-from src.ndstools.formats.file import NitroHeader
-from src.ndstools.formats.graphics.core.utils import (
+from ndstools.formats.file import NitroHeader
+from ndstools.formats.graphics.core.utils import (
     bit_depth_to_code,
     code_to_bit_depth,
 )

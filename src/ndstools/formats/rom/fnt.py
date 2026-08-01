@@ -1,4 +1,4 @@
-from src.ndstools.fs import EndianBinaryStreamReader, EndianBinaryReader
+from ndstools.fs import EndianBinaryStreamReader, EndianBinaryReader
 
 from dataclasses import dataclass
 from pathlib import Path

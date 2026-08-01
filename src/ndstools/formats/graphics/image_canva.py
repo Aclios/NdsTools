@@ -3,8 +3,8 @@ from .utils import (
     paste_alpha,
     get_image_colors,
 )
-from src.ndstools.formats.graphics.core.oam import OAM, Tile
-from src.ndstools.formats.graphics.core.utils import (
+from ndstools.formats.graphics.core.oam import OAM, Tile
+from ndstools.formats.graphics.core.utils import (
     convert_from_eightbpp,
     convert_to_eightbpp,
     get_expected_tile_count,

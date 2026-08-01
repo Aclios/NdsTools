@@ -1,4 +1,4 @@
-from src.ndstools.fs import EndianBinaryReader
+from ndstools.fs import EndianBinaryReader
 from .bitmap import Bitmap
 
 

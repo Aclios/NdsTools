@@ -1,5 +1,5 @@
-from src.ndstools.fs import EndianBinaryReader
-from src.ndstools.formats.graphics import RawPalette, RawBitmap, ImageCanva
+from ndstools.fs import EndianBinaryReader
+from ndstools.formats.graphics import RawPalette, RawBitmap, ImageCanva
 
 SUPPORTED_VERSIONS = [0x0001, 0x0002, 0x0003, 0x0103]
 

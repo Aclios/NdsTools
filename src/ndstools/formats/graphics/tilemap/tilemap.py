@@ -1,6 +1,6 @@
-from src.ndstools.formats.file import File
-from src.ndstools.fs import EndianBinaryReader, EndianBinaryWriter
-from src.ndstools.formats.graphics.core import Tile
+from ndstools.formats.file import File
+from ndstools.fs import EndianBinaryReader, EndianBinaryWriter
+from ndstools.formats.graphics.core import Tile
 from PIL import Image
 
 

@@ -1,4 +1,4 @@
-from src.ndstools.formats.file import File
+from ndstools.formats.file import File
 
 from typing import List
 

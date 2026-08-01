@@ -1,5 +1,5 @@
-from src.ndstools.fs import EndianBinaryReader
-from src.ndstools.compression import decompress_blz
+from ndstools.fs import EndianBinaryReader
+from ndstools.compression import decompress_blz
 
 
 class Overlay:

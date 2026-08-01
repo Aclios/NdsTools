@@ -1,5 +1,5 @@
 from PIL import Image
-from src.ndstools.formats.graphics.core.tile import Tile
+from ndstools.formats.graphics.core.tile import Tile
 from .constants import VALID_OAM_SIZE
 from .utils import verify_bit_depth, get_expected_tile_count, convert_from_eightbpp
 

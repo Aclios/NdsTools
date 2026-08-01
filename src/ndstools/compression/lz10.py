@@ -25,7 +25,7 @@ source: https://github.com/magical/nlzss
 from struct import pack
 from collections import defaultdict
 from operator import itemgetter
-from src.ndstools.fs import EndianBinaryStreamReader
+from ndstools.fs import EndianBinaryStreamReader
 
 
 class DecompressionError(ValueError):

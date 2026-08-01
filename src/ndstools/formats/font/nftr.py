@@ -1,7 +1,7 @@
-from src.ndstools.fs import EndianBinaryReader
-from src.ndstools.formats.file import File, NitroHeader
-from src.ndstools.formats.graphics import RawBitmap, ImageCanva, Palette
-from src.ndstools.formats.graphics.utils import new_bw_palette, empty_im
+from ndstools.fs import EndianBinaryReader
+from ndstools.formats.file import File, NitroHeader
+from ndstools.formats.graphics import RawBitmap, ImageCanva, Palette
+from ndstools.formats.graphics.utils import new_bw_palette, empty_im
 
 from enum import Enum
 from typing import Optional

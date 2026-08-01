@@ -1,6 +1,6 @@
 from PIL import Image
 
-from src.ndstools.formats.graphics.palette import PaletteColor, RawPalette
+from ndstools.formats.graphics.palette import PaletteColor, RawPalette
 
 
 def empty_im(

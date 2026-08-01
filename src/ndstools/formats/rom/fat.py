@@ -1,4 +1,4 @@
-from src.ndstools.fs import EndianBinaryStreamReader
+from ndstools.fs import EndianBinaryStreamReader
 
 from dataclasses import dataclass
 

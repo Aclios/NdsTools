@@ -1,6 +1,6 @@
-from src.ndstools.formats.graphics import ImageCanva
-from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamReader
-from src.ndstools.formats.graphics import RawBitmap, RawPalette, PaletteColor
+from ndstools.formats.graphics import ImageCanva
+from ndstools.fs import EndianBinaryReader, EndianBinaryStreamReader
+from ndstools.formats.graphics import RawBitmap, RawPalette, PaletteColor
 
 from pathlib import Path
 from typing import List, Tuple

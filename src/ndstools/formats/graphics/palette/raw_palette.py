@@ -1,4 +1,4 @@
-from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
+from ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
 from .palette import Palette, PaletteColor
 
 

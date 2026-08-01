@@ -1,11 +1,11 @@
-from src.ndstools.fs import (
+from ndstools.fs import (
     EndianBinaryReader,
     EndianBinaryFileReader,
     EndianBinaryStreamReader,
     EndianBinaryStreamWriter,
 )
 from pathlib import Path
-from src.ndstools.compression import decompress, compress
+from ndstools.compression import decompress, compress
 
 FileInput = EndianBinaryReader | bytes | bytearray | str | Path
 
