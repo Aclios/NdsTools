@@ -9,20 +9,33 @@ class MapData:
     The MapData object contains the info of a tile of a mapped image: tile index, palette index, and rotation flags.
     """
 
-    def __init__(self, f: EndianBinaryReader | None = None):
-        self.flip_top_bottom = False
-        self.flip_left_right = False
-        if f is not None:
-            data = f.read_UInt16()
-            self.pal_idx = data // 0x1000
-            data -= self.pal_idx * 0x1000
-            if data >= 0x800:
-                data -= 0x800
-                self.flip_top_bottom = True
-            if data >= 0x400:
-                data -= 0x400
-                self.flip_left_right = True
-            self.tile_idx = data
+    def __init__(
+        self,
+        tile_idx: int,
+        pal_idx: int,
+        flip_top_bottom: bool = False,
+        flip_left_right: bool = False,
+    ):
+        self.tile_idx = tile_idx
+        self.pal_idx = pal_idx
+        self.flip_top_bottom = flip_top_bottom
+        self.flip_left_right = flip_left_right
+
+    @classmethod
+    def read(cls, f: EndianBinaryReader):
+        flip_top_bottom = False
+        flip_left_right = False
+        data = f.read_UInt16()
+        pal_idx = data // 0x1000
+        data -= pal_idx * 0x1000
+        if data >= 0x800:
+            data -= 0x800
+            flip_top_bottom = True
+        if data >= 0x400:
+            data -= 0x400
+            flip_left_right = True
+        tile_idx = data
+        return cls(tile_idx, pal_idx, flip_top_bottom, flip_left_right)
 
     def write_to(self, f: EndianBinaryWriter) -> None:
         """

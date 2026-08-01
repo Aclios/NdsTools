@@ -1,5 +1,7 @@
 from PIL import Image
-from src.ndstools.formats.graphics.utils import (
+from .utils import (
+    verify_bit_depth,
+    get_expected_data_size,
     convert_from_eightbpp,
     convert_to_eightbpp,
 )
@@ -16,20 +18,22 @@ class Tile:
     linear: bool
 
     def __init__(self, in_data: bytes | Image.Image, bit_depth: int):
+        if not verify_bit_depth(bit_depth):
+            raise Exception("Invalid bit depth.")
         self.bit_depth = bit_depth
 
         if isinstance(in_data, bytes):
-            assert (
-                len(in_data) == EXPECTED_DATA_SIZE[self.bit_depth]
-            ), "Invalid data size"
+            if len(in_data) != get_expected_data_size((8, 8), bit_depth):
+                raise Exception("Invalid data size.")
             self.data = in_data
 
         elif isinstance(in_data, Image.Image):
-            assert in_data.size == (8, 8), "Image dimensions should be 8,8"
+            if in_data.size != (8, 8):
+                raise Exception("Image dimensions should be 8,8.")
             self.data = convert_from_eightbpp(in_data.tobytes(), self.bit_depth)
 
         else:
-            raise Exception("Invalid input, expected bytes or Image.Image")
+            raise Exception("Invalid input, expected bytes or a PIL Image.")
 
     def to_bytes(self):
         """

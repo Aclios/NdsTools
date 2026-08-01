@@ -20,7 +20,7 @@ class RawTilemap(Tilemap):
         data_size = len(data)
         self.mapdata_count = data_size // 2
         fb = EndianBinaryStreamReader(data)
-        self.mapdata = [MapData(fb) for _ in range(self.mapdata_count)]
+        self.mapdata = [MapData.read(fb) for _ in range(self.mapdata_count)]
 
     def get_mapdata(self):
         return self.mapdata

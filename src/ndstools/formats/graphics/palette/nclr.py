@@ -1,6 +1,10 @@
 from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
 from .palette import Palette, PaletteColor
 from src.ndstools.formats.file import NitroHeader
+from src.ndstools.formats.graphics.core.utils import (
+    bit_depth_to_code,
+    code_to_bit_depth,
+)
 
 from math import ceil
 
@@ -43,10 +47,7 @@ class NCLR(Palette):
     def set_bit_depth(self, bit_depth: int):
         assert bit_depth in [4, 8], "NCLR bit depth should be either 4 or 8"
         self.pltt.bit_depth = bit_depth
-        if bit_depth == 4:
-            self.pltt.bit_depth_val = 3
-        elif bit_depth == 8:
-            self.pltt.bit_depth_val = 4
+        self.pltt.bit_depth_val = bit_depth_to_code(bit_depth)
 
     def to_bytes(self):
         stream = EndianBinaryStreamWriter()
@@ -70,10 +71,7 @@ class NCLR_PLTT:
         self.magic = f.check_magic(b"TTLP")
         self.section_size = f.read_UInt32()
         self.bit_depth_val = f.read_UInt16()
-        if self.bit_depth_val == 3:
-            self.bit_depth = 4
-        elif self.bit_depth_val == 4:
-            self.bit_depth = 8
+        self.bit_depth = code_to_bit_depth(self.bit_depth_val)
         self.unk1 = f.read_UInt16()
         self.unk2 = f.read_UInt32()
         self.data_size = f.read_UInt32()

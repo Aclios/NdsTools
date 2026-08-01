@@ -51,7 +51,7 @@ class NSCR_SCRN:
         self.im_height = f.read_UInt16()
         self.unk = f.read_UInt32()
         self.mapdata_size = f.read_UInt32()
-        self.mapdata = [MapData(f) for _ in range(self.mapdata_size // 2)]
+        self.mapdata = [MapData.read(f) for _ in range(self.mapdata_size // 2)]
 
     def to_bytes(self):
         stream = EndianBinaryStreamWriter()

@@ -1,6 +1,7 @@
 from PIL import Image
 from src.ndstools.formats.graphics.core.tile import Tile
-from src.ndstools.formats.graphics.utils import convert_from_eightbpp
+from .constants import VALID_OAM_SIZE
+from .utils import verify_bit_depth, get_expected_tile_count, convert_from_eightbpp
 
 
 class OAM:
@@ -21,7 +22,10 @@ class OAM:
         bit_depth: int,
         linear: bool,
     ):
-        assert size in VALID_OAM_SIZE, "Invalid OAM size"
+        if size not in VALID_OAM_SIZE:
+            raise Exception("size should be a valid OAM size.")
+        if not verify_bit_depth(bit_depth):
+            raise Exception("Invalid bit depth.")
         self.bit_depth = bit_depth
         self.size = size
         self.width, self.height = size
@@ -32,13 +36,17 @@ class OAM:
         self.linear = linear
 
         if isinstance(in_data, list):
+            expected_tile_count = get_expected_tile_count(size)
+            if len(in_data) != expected_tile_count:
+                raise Exception(
+                    f"Exactly {expected_tile_count} tiles should be passed."
+                )
             self.tiles = in_data
             self.image = self.build_image()
 
         elif isinstance(in_data, Image.Image):
-            assert (
-                size == in_data.size
-            ), "Passed size and actual Image size are different"
+            if size != in_data.size:
+                raise Exception("Given size and image size should be the same.")
             self.tiles = []
             for j in range(self.tile_height_count):
                 for i in range(self.tile_width_count):
@@ -50,7 +58,7 @@ class OAM:
             self.image = in_data
 
         else:
-            raise Exception("Invalid input, expected bytes or Image.Image")
+            raise Exception("Invalid input, expected bytes or a PIL Image.")
 
     def build_image(self) -> Image.Image:
         it_tiles = iter(self.tiles)
@@ -84,19 +92,3 @@ class OAM:
 
     def get_tiles(self):
         return self.tiles
-
-
-VALID_OAM_SIZE = [
-    (8, 8),
-    (16, 16),
-    (32, 32),
-    (64, 64),
-    (16, 8),
-    (32, 8),
-    (32, 16),
-    (64, 32),
-    (8, 16),
-    (8, 32),
-    (16, 32),
-    (32, 64),
-]

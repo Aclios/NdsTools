@@ -1,11 +1,13 @@
 from .utils import (
-    convert_from_eightbpp,
-    convert_to_eightbpp,
     empty_im,
     paste_alpha,
     get_image_colors,
 )
 from src.ndstools.formats.graphics.core.oam import OAM, Tile
+from src.ndstools.formats.graphics.core.utils import (
+    convert_from_eightbpp,
+    convert_to_eightbpp,
+)
 
 
 from .bitmap import *
@@ -395,10 +397,7 @@ class ImageCanva:
                     tiles_data.append(tile_data)
                     data += tile_data
                     tile_idx = len(tiles_data) - 1
-                mapdata = MapData()
-                mapdata.tile_idx = tile_idx
-                mapdata.pal_idx = pal_idx
-                mapinfos.append(mapdata)
+                mapinfos.append(MapData(tile_idx, pal_idx))
 
         self.bitmap.set_data(data)
         self.palette.set_colors(get_image_colors(im))

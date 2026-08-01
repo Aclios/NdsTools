@@ -1,6 +1,10 @@
 from src.ndstools.fs import EndianBinaryReader, EndianBinaryStreamWriter
 from .bitmap import Bitmap
 from src.ndstools.formats.file import NitroHeader
+from src.ndstools.formats.graphics.core.utils import (
+    bit_depth_to_code,
+    code_to_bit_depth,
+)
 
 
 class NCGR(Bitmap):
@@ -28,8 +32,7 @@ class NCGR(Bitmap):
     def get_im_size(self) -> tuple[int, int] | None:
         if self.char.width != -1:
             return (self.char.width * 8, self.char.height * 8)
-        else:
-            return None
+        return None
 
     def get_bit_depth(self):
         return self.char.bit_depth
@@ -49,10 +52,7 @@ class NCGR(Bitmap):
     def set_bit_depth(self, bit_depth: int):
         assert bit_depth in [4, 8], "NCGR bit depth should be either 4 or 8"
         self.char.bit_depth = bit_depth
-        if bit_depth == 4:
-            self.char.bit_depth_val = 3
-        elif bit_depth == 8:
-            self.char.bit_depth_val = 4
+        self.char.bit_depth_val = bit_depth_to_code(bit_depth)
 
     def set_linear_flag(self, linear_flag: bool):
         self.char.linear_flag = int(linear_flag)
@@ -82,11 +82,7 @@ class NCGR_CHAR:
         self.height = f.read_Int16()
         self.width = f.read_Int16()
         self.bit_depth_val = f.read_UInt32()
-        assert self.bit_depth_val in [3, 4]
-        if self.bit_depth_val == 3:
-            self.bit_depth = 4
-        else:
-            self.bit_depth = 8
+        self.bit_depth = code_to_bit_depth(self.bit_depth_val)
         self.unk_height = f.read_Int16()
         self.unk_width = f.read_Int16()
         self.linear_flag = f.read_UInt8()
