@@ -7,6 +7,7 @@ from src.ndstools.formats.graphics.core.oam import OAM, Tile
 from src.ndstools.formats.graphics.core.utils import (
     convert_from_eightbpp,
     convert_to_eightbpp,
+    get_expected_tile_count,
 )
 
 
@@ -266,7 +267,10 @@ class ImageCanva:
                     )
 
                 oam = OAM(
-                    tiles[tile_offset:],
+                    tiles[
+                        tile_offset : tile_offset
+                        + get_expected_tile_count(oam_data.size)
+                    ],
                     oam_data.size,
                     oam_data.pal_idx,
                     self.bit_depth,
