@@ -40,34 +40,36 @@ def decompress_raw_huffman(in_data: bytes, decompressed_size: int, num_bits: int
     mask = 0
     nbits = 0
     out_pos = 0
+    tree = 0
+    next = 0
     stream.seek((in_data[0] + 1) << 1)
-    pos = in_data[1]
+    pos = in_data[tree + 1]
     N = len(in_data)
 
     while out_pos < decompressed_size:
-        mask >>= 1
-        if mask == 0:
-            if stream.tell() + 3 > N:
+        mask = mask >> 1
+        if not mask:
+            if stream.tell() + 3 >= N:
                 break
             code = stream.read_UInt32()
             mask = 0x80_00_00_00
 
-        next = ((pos & 0x3F) + 1) << 1
+        next += ((pos & 0x3F) + 1) << 1
         next &= 0xFF_FF_FF_FF
 
         if code & mask == 0:
             ch = pos & 0x80
-            pos = in_data[next]
+            pos = in_data[tree + next]
         else:
             ch = pos & 0x40
-            pos = in_data[next + 1]
+            pos = in_data[tree + next + 1]
 
         if ch:
             out_data[out_pos] |= pos << nbits
             nbits = (nbits + num_bits) & 7
             if nbits == 0:
                 out_pos += 1
-            pos = in_data[1]
+            pos = in_data[tree + 1]
             next = 0
 
     return out_data
