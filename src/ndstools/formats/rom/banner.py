@@ -83,8 +83,8 @@ class NDSBanner:
             "Italian": self.italian,
             "Spanish": self.spanish,
         }
-        if self.chinese:
+        if self.info.has_chinese:
             names["Chinese"] = self.chinese
-        if self.korean:
+        if self.info.has_korean:
             names["Korean"] = self.korean
         return names
