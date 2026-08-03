@@ -36,9 +36,14 @@ class NARC(File):
         return self.fimg.data[data_start:data_end]
 
     def _load_files(self):
-        for file in self.fntb.fnt.files:
-            data = self._get_file_data(file.idx)
-            self.files.append(NARCFile(file.path, data))
+        if not self.fntb.is_empty:
+            for file in self.fntb.fnt.files:
+                data = self._get_file_data(file.idx)
+                self.files.append(NARCFile(file.path, data))
+        else:
+            for idx in range(self.fatb.file_count):
+                data = self._get_file_data(idx)
+                self.files.append(NARCFile(f"{idx:04d}.bin", data))
 
     def export_files(self, out_dir: str):
         """
@@ -65,6 +70,7 @@ class NARC_FNTB:
         self.section_size = f.read_UInt32()
         self.fnt_data = f.read(self.section_size - 8)
         self.fnt = FNT(self.fnt_data)
+        self.is_empty = self.fnt.is_empty
 
 
 class NARC_FIMG:

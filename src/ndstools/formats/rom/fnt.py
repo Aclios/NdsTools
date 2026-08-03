@@ -41,6 +41,7 @@ class FNT_Directory:
 
 class FNT:
     def __init__(self, data: bytes):
+        self.is_empty = False
         f = EndianBinaryStreamReader(data)
         first_offset = int.from_bytes(f.peek(4), "little")
         self.entry_count = first_offset // 8
@@ -49,7 +50,10 @@ class FNT:
         self._resolve_filetree()
 
     def _resolve_filetree(self):
-        self._resolve_directory(self.directories[0], Path("."))
+        if len(self.directories) > 0:
+            self._resolve_directory(self.directories[0], Path("."))
+        else:
+            self.is_empty = True
 
     def _resolve_directory(self, dir: FNT_Directory, current_path: Path):
         dir._curr_file_idx = dir.file_start_idx

@@ -1,6 +1,7 @@
 __pycache__
 tests
 /*.py
+/src/*.py
 docs/build
 docs
 dist
