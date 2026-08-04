@@ -76,6 +76,12 @@ class EndianBinaryReader:
         if mod != 0:
             self.read(alignment - mod)
 
+    def get_size(self):
+        pos = self.tell()
+        size = self.seek(0, 2)
+        self.seek(pos)
+        return size
+
 
 class EndianBinaryFileReader(EndianBinaryReader):
     def __init__(self, filepath: str | Path, endianness: str = "little"):

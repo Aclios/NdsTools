@@ -16,9 +16,7 @@ class RawPalette(Palette):
     """
 
     def read(self, f: EndianBinaryReader):
-        f.seek(0, 2)
-        self.color_count = f.tell() // 2
-        f.seek(0)
+        self.color_count = f.get_size() // 2
         self.colors = [
             PaletteColor.from_bytes(f.read(2)) for _ in range(self.color_count)
         ]

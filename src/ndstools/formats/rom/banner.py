@@ -53,7 +53,7 @@ class NDSBanner:
         self.checksum = f.read_UInt16()
         self.padding = f.read(0x1C)
         self.bitmap = RawBitmap(f.read(0x200), try_decompress=False)
-        self.palette = RawPalette(f.read(0x20),try_decompress=False)
+        self.palette = RawPalette(f.read(0x20), try_decompress=False)
         self.japanese = self.read_name(f)
         self.english = self.read_name(f)
         self.french = self.read_name(f)
