@@ -4,6 +4,9 @@ from .tex0 import TEX0
 
 
 class NSBMD(File):
+    def __repr__(self):
+        return self.tex.__repr__()
+
     def read(self, f: EndianBinaryReader):
         self.header = NitroHeader(f, b"BMD0")
         self.mdl_offset = f.read_UInt32()
@@ -17,6 +20,9 @@ class NSBMD(File):
 
     def export_textures(self, out_dir: str):
         self.tex.export_textures(out_dir)
+
+    def export_mapping(self, out_path: str):
+        self.tex.export_mapping(out_path)
 
 
 class MDL0:

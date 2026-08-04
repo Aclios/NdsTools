@@ -4,13 +4,99 @@ from ndstools.formats.graphics import RawBitmap, RawPalette, PaletteColor
 
 from pathlib import Path
 from typing import List, Tuple
+from enum import IntEnum
+
+
+class TexFormat(IntEnum):
+    A3I5 = 1
+    I2 = 2
+    I4 = 3
+    I8 = 4
+    TexelCompressed = 5
+    A5I3 = 6
+    A1BGR555 = 7
+
+    @property
+    def bit_depth(self):
+        match self.name:
+            case "A3I5" | "I8" | "TexelCompressed" | "A5I3":
+                return 8
+            case "I4":
+                return 4
+            case "I2":
+                return 2
+            case "A1BGR555":
+                return 16
+
+    @property
+    def palette_size(self):
+        match self.name:
+            case "A1BGR555":
+                return 0
+            case "I2":
+                return 8
+            case "A5I3":
+                return 0x10
+            case "I4":
+                return 0x20
+            case "A3I5":
+                return 0x40
+            case "TexelCompressed" | "I8":
+                return 0x200
+
+    def build_image(
+        self,
+        im_size: tuple[int, int],
+        bitmap_data: bytes,
+        palette_data: bytes,
+        compression_info_data: bytes,
+    ):
+        transparency = False
+        match self.name:
+            case "TexelCompressed":
+                transparency = True
+                palette = RawPalette(palette_data)
+                data, new_colors = texel_decompress(
+                    bitmap_data,
+                    compression_info_data,
+                    palette.get_colors(),
+                    im_size,
+                )
+                bitmap = RawBitmap(data)
+                palette.set_colors(new_colors)
+
+            case "I2" | "I4" | "I8":
+                bitmap = RawBitmap(bitmap_data)
+                palette = RawPalette(palette_data)
+
+            case _:
+                raise Exception(f"Unsupported texture mode: {self.name}")
+
+        im = ImageCanva(
+            bitmap=bitmap,
+            palette=palette,
+            bit_depth=self.bit_depth,
+            im_size=im_size,
+            linear=True,
+            transparency=transparency,
+        )
+        im.resolve()
+        return im.image
 
 
 class TEX0:
+    def __repr__(self):
+        out = f"Number of textures: {self.tex_info.tex_count}\n"
+        for idx, tex in enumerate(self.tex_info.parameters):
+            pal = self.pal_info.parameters[idx]
+            out += f"Name: {self.tex_info.names[idx]}, format: {tex.format.name}, bitmap_offset: {hex(self.offset + self.tex_data_offset + tex.tex_offset * 8)}, pal_offset: {hex(self.offset + self.palette_data_offset + pal.pal_offset * 0x8)} \n"
+        return out
+
     def __init__(self, f: EndianBinaryReader):
         self.offset = f.tell()
         self.magic = f.check_magic(b"TEX0")
         self.section_size = f.read_UInt32()
+
         self.padding1 = f.read_UInt32()
         self.tex_region_size = f.read_UInt16()
         self.tex_info_offset = f.read_UInt16()
@@ -35,62 +121,59 @@ class TEX0:
 
         self.calculate_compression_info_offsets()
 
-        for idx, _ in enumerate(self.tex_info.parameters):
-            (
-                self.tex_info.parameters[idx].bitmap_data,
-                self.tex_info.parameters[idx].palette_data,
-                self.tex_info.parameters[idx].compression_info_data,
-            ) = self.get_texture(f, idx)
+        f.seek(self.offset)
+        self.raw_data = f.read(self.section_size)
 
     def export_textures(self, out_dir: str):
         Path(out_dir).mkdir(exist_ok=True, parents=True)
-        for idx in range(len(self.tex_info.parameters)):
-            name = self.tex_info.names[idx]
-            im = self.tex_info.parameters[idx].build_image()
-            im.save(Path(out_dir) / (name.decode() + ".png"))
-
-    def get_texture(self, f: EndianBinaryReader, tex_idx: int):
-        assert tex_idx < len(
-            self.tex_info.parameters
-        ), f"Given idx ({tex_idx}) is beyond max tex idx ({len(self.tex_info.parameters)})"
-        parameters = self.tex_info.parameters[tex_idx]
-        if parameters.format_code != 5:
-            bitmap_offset = (
-                parameters.tex_offset * 8 + self.offset + self.tex_data_offset
+        for tex_idx, param in enumerate(self.tex_info.parameters):
+            pal_idx = self.get_related_palette_idx(param.name, tex_idx)
+            bitmap, palette, comp_info = self.get_texture_data(tex_idx, pal_idx)
+            im = param.format.build_image(
+                (param.width, param.height), bitmap, palette, comp_info
             )
-            f.seek(bitmap_offset)
-            bitmap_data = f.read(
+            im.save(Path(out_dir) / f"{param.name}.png")
+
+    def get_texture_data(self, tex_idx: int, palette_idx: int):
+        if tex_idx >= len(self.tex_info.parameters):
+            raise Exception(
+                f"Given idx ({tex_idx}) is beyond max tex idx ({len(self.tex_info.parameters)})"
+            )
+        parameters = self.tex_info.parameters[tex_idx]
+
+        if parameters.format.name == "TexelCompressed":
+            bitmap_offset = (
+                self.tex_compressed_data_offset + parameters.tex_offset * 0x8
+            )
+            bitmap_size = parameters.width * parameters.height // 4
+        else:
+            bitmap_offset = self.tex_data_offset + parameters.tex_offset * 8
+            bitmap_size = (
                 parameters.width * parameters.height * parameters.format.bit_depth // 8
             )
-        else:
-            bitmap_offset = (
-                self.offset
-                + self.tex_compressed_data_offset
-                + parameters.tex_offset * 0x8
-            )
-            f.seek(bitmap_offset)
-            bitmap_data = f.read(parameters.width * parameters.height // 4)
+        bitmap_data = self.raw_data[bitmap_offset : bitmap_offset + bitmap_size]
 
         palette_offset = (
-            self.offset
-            + self.palette_data_offset
-            + self.pal_info.parameters[tex_idx].pal_offset * 0x8
+            self.palette_data_offset
+            + self.pal_info.parameters[palette_idx].pal_offset * 0x8
         )
+        if parameters.format.name == "TexelCompressed":
+            palette_data = self.raw_data[palette_offset:]
 
-        f.seek(palette_offset)
-        if parameters.format_code != 5:
-            palette_data = f.read(parameters.format.palette_size)
         else:
-            palette_data = f.read(self.offset + self.section_size - palette_offset)
+            palette_size = parameters.format.palette_size
+            palette_data = self.raw_data[palette_offset : palette_offset + palette_size]
 
-        if parameters.format_code == 5:
+        if parameters.format.name == "TexelCompressed":
             compression_info_offset = (
-                self.offset
-                + self.tex_compressed_info_data_offset
+                self.tex_compressed_info_data_offset
                 + parameters.compression_info_offset
             )
-            f.seek(compression_info_offset)
-            info_data = f.read(parameters.width * parameters.height // 8)
+            compression_info_size = parameters.width * parameters.height // 8
+            info_data = self.raw_data[
+                compression_info_offset : compression_info_offset
+                + compression_info_size
+            ]
         else:
             info_data = bytes()
 
@@ -99,9 +182,17 @@ class TEX0:
     def calculate_compression_info_offsets(self):
         compression_info_offset = 0
         for parameters in self.tex_info.parameters:
-            if parameters.format_code == 5:
+            if parameters.format.name == "TexelCompressed":
                 parameters.compression_info_offset = compression_info_offset
                 compression_info_offset += (parameters.width * parameters.height) // 8
+
+    def get_related_palette_idx(self, tex_name: str, tex_idx: int):
+        pal_name = (tex_name + "_pl")[:0x10]
+        try:
+            pal_idx = self.pal_info.name_map[pal_name]
+        except KeyError:
+            pal_idx = tex_idx
+        return pal_idx
 
 
 class TexInfo:
@@ -120,21 +211,24 @@ class TexInfo:
         self.info_section_size = f.read_UInt16()
         self.parameters = [TexParameters(f) for _ in range(self.tex_count)]
 
-        self.names = [f.read(0x10).strip(b"\x00") for _ in range(self.tex_count)]
+        self.names = [
+            f.read(0x10).strip(b"\x00").decode() for _ in range(self.tex_count)
+        ]
 
+        for i in range(self.tex_count):
+            self.parameters[i].unk4 = self.unk1[i]
+            self.parameters[i].unk5 = self.unk2[i]
+            self.parameters[i].name = self.names[i]
 
-class TexFormat:
-    idx: int
-    palette_size: int
-    bit_depth: int
+        self.name_map = {params.name: idx for idx, params in enumerate(self.parameters)}
 
 
 class TexParameters:
-    bitmap_data: bytes
-    palette_data: bytes
     compression_info_offset: int
-    compression_info_data: bytes
     format: TexFormat
+    unk4: int
+    unk5: int
+    name: str
 
     def __init__(self, f: EndianBinaryReader):
         self.tex_offset = f.read_UInt16()
@@ -147,23 +241,7 @@ class TexParameters:
         self.coord_transform = self.parameters & 14
         self.color = (self.parameters >> 13) & 1
         self.format_code = (self.parameters >> 10) & 7
-        match self.format_code:
-            case 1:
-                self.format = FormatA3I5()
-            case 2:
-                self.format = FormatI2()
-            case 3:
-                self.format = FormatI4()
-            case 4:
-                self.format = FormatI8()
-            case 5:
-                self.format = FormatTexel()
-            case 6:
-                self.format = FormatA5I3()
-            case 7:
-                self.format = FormatA1BGR555()
-            case _:
-                raise Exception(f"Unsupported texture format code: {self.format_code}")
+        self.format = TexFormat(self.format_code)
 
         self.height = 8 << ((self.parameters >> 7) & 7)
         self.width = 8 << ((self.parameters >> 4) & 7)
@@ -184,34 +262,6 @@ class TexParameters:
             else:
                 self.height = 0x100
 
-    def build_image(self):
-        transparency = False
-        if self.format_code == 5:
-            transparency = True
-            palette = RawPalette(self.palette_data)
-            data, new_colors = texel_decompress(
-                self.bitmap_data,
-                self.compression_info_data,
-                palette.get_colors(),
-                (self.width, self.height),
-            )
-            bitmap = RawBitmap(data)
-            palette.set_colors(new_colors)
-        else:
-            bitmap = RawBitmap(self.bitmap_data)
-            palette = RawPalette(self.palette_data)
-
-        im = ImageCanva(
-            bitmap=bitmap,
-            palette=palette,
-            bit_depth=self.format.bit_depth,
-            im_size=(self.width, self.height),
-            linear=True,
-            transparency=transparency,
-        )
-        im.resolve()
-        return im.image
-
 
 class PaletteInfo:
     def __init__(self, f: EndianBinaryReader):
@@ -229,55 +279,26 @@ class PaletteInfo:
         self.info_section_size = f.read_UInt16()
         self.parameters = [PaletteParameters(f) for _ in range(self.pal_count)]
 
-        self.names = [f.read(0x10).strip(b"\x00") for _ in range(self.pal_count)]
+        self.names = [
+            f.read(0x10).strip(b"\x00").decode() for _ in range(self.pal_count)
+        ]
+
+        for i in range(self.pal_count):
+            self.parameters[i].unk1 = self.unk1[i]
+            self.parameters[i].unk2 = self.unk2[i]
+            self.parameters[i].name = self.names[i]
+
+        self.name_map = {params.name: idx for idx, params in enumerate(self.parameters)}
 
 
 class PaletteParameters:
+    unk1: int
+    unk2: int
+    name: str
+
     def __init__(self, f: EndianBinaryReader):
         self.pal_offset = f.read_UInt16() & 0x1FFF
         self.padding = f.read_UInt16()
-
-
-class FormatA3I5(TexFormat):
-    idx = 1
-    palette_size = 0x40
-    bit_depth = 8
-
-
-class FormatI2(TexFormat):
-    idx = 2
-    palette_size = 0x8
-    bit_depth = 2
-
-
-class FormatI4(TexFormat):
-    idx = 3
-    palette_size = 0x20
-    bit_depth = 4
-
-
-class FormatI8(TexFormat):
-    idx = 4
-    palette_size = 0x200
-    bit_depth = 8
-
-
-class FormatTexel(TexFormat):
-    idx = 5
-    palette_size = 0x200
-    bit_depth = 8
-
-
-class FormatA5I3(TexFormat):
-    idx = 6
-    palette_size = 0x10
-    bit_depth = 8
-
-
-class FormatA1BGR555(TexFormat):
-    idx = 7
-    palette_size = 0
-    bit_depth = 16
 
 
 def texel_decompress(
@@ -307,6 +328,8 @@ def texel_decompress(
             pal_info = finf.read_UInt16()
             pal_offset = pal_info & 0x3FFF
             pal_idx_start = pal_offset * 2
+            if pal_idx_start > len(colors):
+                pal_idx_start -= pal_offset * 2
             pal_mode = pal_info >> 14
             for hTex in range(4):
                 texel_row = (tex_data >> (hTex * 8)) & 0xFF
