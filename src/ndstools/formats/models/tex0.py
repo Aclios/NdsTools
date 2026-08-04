@@ -41,8 +41,10 @@ class TexFormat(IntEnum):
                 return 0x20
             case "A3I5":
                 return 0x40
-            case "TexelCompressed" | "I8":
+            case "I8":
                 return 0x200
+            case "TexelCompressed":
+                return -1
 
     def build_image(
         self,
@@ -89,7 +91,8 @@ class TEX0:
         out = f"Number of textures: {self.tex_info.tex_count}\n"
         for idx, tex in enumerate(self.tex_info.parameters):
             pal = self.pal_info.parameters[idx]
-            out += f"Name: {self.tex_info.names[idx]}, format: {tex.format.name}, bitmap_offset: {hex(self.offset + self.tex_data_offset + tex.tex_offset * 8)}, pal_offset: {hex(self.offset + self.palette_data_offset + pal.pal_offset * 0x8)} \n"
+            out += f"Bitmap name: {self.tex_info.names[idx]}, format: {tex.format.name}, bitmap_offset: {hex(self.offset + self.tex_data_offset + tex.tex_offset * 8)}\n"
+            out += f"Palette name: {self.tex_info.names[idx]}, format: {tex.format.name}, pal_offset: {hex(self.offset + self.palette_data_offset + pal.pal_offset * 0x8)} \n"
         return out
 
     def __init__(self, f: EndianBinaryReader):
@@ -158,7 +161,11 @@ class TEX0:
             + self.pal_info.parameters[palette_idx].pal_offset * 0x8
         )
         if parameters.format.name == "TexelCompressed":
-            palette_data = self.raw_data[palette_offset:]
+            if tex_idx == len(self.tex_info.parameters) - 1:
+                palette_data = self.raw_data[palette_offset:]
+            else:
+                next_palette_offset = self.palette_data_offset + self.pal_info.parameters[palette_idx + 1].pal_offset * 0x8
+                palette_data = self.raw_data[palette_offset:next_palette_offset]
 
         else:
             palette_size = parameters.format.palette_size
@@ -328,8 +335,8 @@ def texel_decompress(
             pal_info = finf.read_UInt16()
             pal_offset = pal_info & 0x3FFF
             pal_idx_start = pal_offset * 2
-            if pal_idx_start > len(colors):
-                pal_idx_start -= pal_offset * 2
+            # TODO: try to understand what is going on here
+            pal_idx_start = pal_idx_start % len(colors)
             pal_mode = pal_info >> 14
             for hTex in range(4):
                 texel_row = (tex_data >> (hTex * 8)) & 0xFF
