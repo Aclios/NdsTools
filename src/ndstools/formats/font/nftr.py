@@ -21,7 +21,6 @@ class NFTREncoding(Enum):
 class NFTR(File):
     def read(self, f: EndianBinaryReader):
         self.header = NitroHeader(f, b"RTFN")
-        assert self.header.section_count == 5
         self.finf = NFTR_FINF(f)
         f.seek(self.finf.cglp_offset)
         self.cglp = NFTR_CGLP(f)
