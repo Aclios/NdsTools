@@ -49,7 +49,7 @@ class NFTR(File):
             transparency=True,
         )
         for idx, glyph_data in enumerate(self.cglp.glyphes_data):
-            glyph_canva.load_bitmap(RawBitmap(glyph_data))
+            glyph_canva.load_bitmap(RawBitmap(glyph_data, try_decompress=False))
             glyph_canva.resolve()
             im.paste(
                 glyph_canva.image,

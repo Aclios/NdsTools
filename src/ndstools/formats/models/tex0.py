@@ -55,19 +55,19 @@ class TexFormat(IntEnum):
         match self.name:
             case "TexelCompressed":
                 transparency = True
-                palette = RawPalette(palette_data)
+                palette = RawPalette(palette_data, try_decompress=False)
                 data, new_colors = texel_decompress(
                     bitmap_data,
                     compression_info_data,
                     palette.get_colors(),
                     im_size,
                 )
-                bitmap = RawBitmap(data)
+                bitmap = RawBitmap(data, try_decompress=False)
                 palette.set_colors(new_colors)
 
             case "I2" | "I4" | "I8":
-                bitmap = RawBitmap(bitmap_data)
-                palette = RawPalette(palette_data)
+                bitmap = RawBitmap(bitmap_data, try_decompress=False)
+                palette = RawPalette(palette_data, try_decompress=False)
 
             case _:
                 raise Exception(f"Unsupported texture mode: {self.name}")

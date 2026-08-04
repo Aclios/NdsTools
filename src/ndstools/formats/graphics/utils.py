@@ -70,7 +70,7 @@ def new_bw_palette(bit_depth: int, inverted: bool = False):
             num_colors = 16
         case 8:
             num_colors = 256
-    pal = RawPalette(b"")
+    pal = RawPalette(b"", try_decompress=False)
     step = 255 / (num_colors - 1)
     colors = []
     for i in range(num_colors):

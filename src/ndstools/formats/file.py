@@ -11,7 +11,7 @@ FileInput = EndianBinaryReader | bytes | bytearray | str | Path
 
 
 class File:
-    def __init__(self, inp: FileInput, no_decompress=False):
+    def __init__(self, inp: FileInput, try_decompress=True):
         self.compression = None
         if isinstance(inp, (str, Path)):
             data = EndianBinaryFileReader(inp).read()
@@ -24,7 +24,7 @@ class File:
 
         else:
             raise Exception("Invalid input. Expected a buffer or a filepath.")
-        if not no_decompress:
+        if try_decompress:
             try:
                 data, compression = decompress(data)
                 self.compression = compression
