@@ -14,6 +14,9 @@ class SWAV(File):
         self.data = SWAV_DATA(f)
 
     def export(self, out_path: str):
+        """
+        Export the audoio data as a wav file to the given path.
+        """
         self.data.audio.to_wav(out_path)
 
 
@@ -25,6 +28,10 @@ class SWAV_DATA:
 
 
 class AudioData:
+    """
+    The common audio data used in SWAR and SWAV files.
+    """
+
     data: bytes
 
     def __init__(self, f: EndianBinaryReader, data_size: int):

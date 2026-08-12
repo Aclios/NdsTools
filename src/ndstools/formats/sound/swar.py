@@ -7,14 +7,17 @@ from pathlib import Path
 
 class SWAR(File):
     """
-    A SWAR file is an archive for sound effects.
+    A SWAR file is an archive of sound effects.
     """
 
     def read(self, f: EndianBinaryReader):
         self.header = NitroHeader(f, b"SWAR")
         self.data = SWAR_DATA(f)
 
-    def extract(self, out_dir: str):
+    def export_all(self, out_dir: str):
+        """
+        Export sound effects to the given directory.
+        """
         Path(out_dir).mkdir(exist_ok=True, parents=True)
         for idx, entry in enumerate(self.data.entries):
             entry.to_wav(Path(out_dir) / f"swav_{idx}.wav")

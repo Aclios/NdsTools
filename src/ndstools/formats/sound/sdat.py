@@ -7,7 +7,7 @@ from .swar import SWAR
 
 class SDAT(File):
     """
-    Load an SDAT (Sound DATa) file, which is an archive containing BGMs and sound effects.
+    Load an SDAT (Sound DATa) file, which is an archive containing BGMs and, sound effects and audio streams.
     """
 
     def read(self, f: EndianBinaryReader):
@@ -34,39 +34,11 @@ class SDAT(File):
         f.seek(self.fat_offset)
         self.fat = SDAT_FAT(f)
 
-    def unpack(self, out_dir: str):
+    def export_all(self, out_dir: str):
         """
-        if not (Path(out_dir) / "SSEQ").exists():
-            os.makedirs(Path(out_dir) / "SSEQ")
+        Export sound contained in the SDAT file in playable formats.
 
-        if not (Path(out_dir) / "SSAR").exists():
-            os.makedirs(Path(out_dir) / "SSAR")
-
-        if not (Path(out_dir) / "SBNK").exists():
-            os.makedirs(Path(out_dir) / "SBNK")
-
-        if not (Path(out_dir) / "STRM").exists():
-            os.makedirs(Path(out_dir) / "STRM")
-
-        for idx, sseq_info in enumerate(self.info.sseq_info):
-            name = self.symb.sseq_names[idx]
-            data = self.fat.entries[sseq_info.id].data
-            open(Path(out_dir) / "SSEQ" / (name + ".sseq"), "wb").write(data)
-
-        for idx, ssar_info in enumerate(self.info.ssar_info):
-            name = self.symb.ssar_names[idx]
-            data = self.fat.entries[ssar_info.id].data
-            open(Path(out_dir) / "SSAR" / (name + ".ssar"), "wb").write(data)
-
-        for idx, sbnk_info in enumerate(self.info.sbnk_info):
-            name = self.symb.sbnk_names[idx]
-            data = self.fat.entries[sbnk_info.id].data
-            open(Path(out_dir) / "SBNK" / (name + ".sbnk"), "wb").write(data)
-
-        for idx, strm_info in enumerate(self.info.strm_info):
-            name = self.symb.strm_names[idx]
-            data = self.fat.entries[strm_info.id].data
-            open(Path(out_dir) / "STRM" / (name + ".strm"), "wb").write(data)
+        Currently, only the SWAR section (sound effects) is supported.
         """
 
         Path(out_dir, "SWAR").mkdir(exist_ok=True, parents=True)
@@ -74,7 +46,7 @@ class SDAT(File):
             name = self.symb.swar_names[idx]
             data = self.fat.entries[swar_info.id].data
             swar = SWAR(data)
-            swar.extract(Path(out_dir) / "SWAR" / name)
+            swar.export_all(Path(out_dir) / "SWAR" / name)
 
 
 class SDAT_SYMB:
