@@ -19,6 +19,10 @@ class NFTREncoding(Enum):
 
 
 class NFTR(File):
+    """
+    A NFTR (for Nitro FonT Resource) file contains a text font.
+    """
+
     def read(self, f: EndianBinaryReader):
         self.header = NitroHeader(f, b"RTFN")
         self.finf = NFTR_FINF(f)
@@ -30,6 +34,9 @@ class NFTR(File):
         # TODO Cmap section
 
     def export_glyphs(self, out_path: str, palette: Optional[Palette] = None):
+        """
+        Export font glyphs to an image. The given palette is used if it exists, otherwise a black & white palette is used instead.
+        """
         row_count = self.cglp.glyph_count // GLYPH_COLUMN_COUNT
         if (self.cglp.glyph_count % GLYPH_COLUMN_COUNT) != 0:
             row_count += 1
@@ -62,7 +69,7 @@ class NFTR(File):
 
 class NFTR_FINF:
     """
-    NFTR File Info
+    The FINF (File INFo) section contains various info such as the text encoding, the maximum glyph width and height, pointers to the other sections, etc.
     """
 
     def __init__(self, f: EndianBinaryReader):
@@ -87,7 +94,7 @@ class NFTR_FINF:
 
 class NFTR_CGLP:
     """
-    NFTR Characters Glyphs
+    The CGLP (Character GLyPh) section contains the glyph bitmap data for each character.
     """
 
     def __init__(self, f: EndianBinaryReader):
@@ -107,7 +114,7 @@ class NFTR_CGLP:
 
 class NFTR_CWDH:
     """
-    NFTR Characters Widths
+    The CWDH (Character WiDtH) section contains width info for each character.
     """
 
     def __init__(self, f: EndianBinaryReader, glyph_count: int):
@@ -120,6 +127,10 @@ class NFTR_CWDH:
 
 
 class GlyphInfo:
+    """
+    Glyph display info for a character.
+    """
+
     def __init__(self, f: EndianBinaryReader):
         self.x_offset = f.read_Int8()
         self.width = f.read_UInt8()
