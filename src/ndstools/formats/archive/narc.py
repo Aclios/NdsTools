@@ -15,10 +15,7 @@ class NARCFile:
 
 class NARC(File):
     """
-    Load an NARC (for Nitro ARChive) file, which contains folders and files.
-
-    :params inp: The input can either be an active EndianBinaryReader (if you want to read from an opened file),
-        a bytes or bytearray stream, or a path to a file in your system.
+    A NARC (for Nitro ARChive) file is an archive containing folders and files.
     """
 
     def read(self, f: EndianBinaryReader):
@@ -47,7 +44,7 @@ class NARC(File):
 
     def export_files(self, out_dir: str):
         """
-        Write the files of the NARC using the given directory as root.
+        Write the files contained inside the NARC archive, using out_dir as the root directory.
         """
         for file in self.files:
             out_path = Path(out_dir, file.path)
@@ -56,6 +53,10 @@ class NARC(File):
 
 
 class NARC_FATB:
+    """
+    The FATB section contains the number of files in the archive and FAT (File Access Table) data.
+    """
+
     def __init__(self, f: EndianBinaryReader):
         self.magic = f.check_magic(b"BTAF")
         self.section_size = f.read_UInt32()
@@ -65,7 +66,12 @@ class NARC_FATB:
 
 
 class NARC_FNTB:
+    """
+    The FNTB section contains FNT (File Name Table) data. The FNT can be empty, in this case the files don't have names and are only referenced by their ids.
+    """
+
     def __init__(self, f: EndianBinaryReader):
+
         self.magic = f.check_magic(b"BTNF")
         self.section_size = f.read_UInt32()
         self.fnt_data = f.read(self.section_size - 8)
@@ -74,6 +80,10 @@ class NARC_FNTB:
 
 
 class NARC_FIMG:
+    """
+    The FIMG section contains the raw files data.
+    """
+
     def __init__(self, f: EndianBinaryReader):
         self.magic = f.check_magic(b"GMIF")
         self.entry_size = f.read_UInt32()
