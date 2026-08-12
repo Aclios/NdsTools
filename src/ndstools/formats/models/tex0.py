@@ -87,6 +87,10 @@ class TexFormat(IntEnum):
 
 
 class TEX0:
+    """
+    The TEX0 section contains textures for 3D models.
+    """
+
     def __repr__(self):
         out = f"Number of textures: {self.tex_info.tex_count}\n"
         for idx, tex in enumerate(self.tex_info.parameters):
@@ -122,22 +126,25 @@ class TEX0:
         f.seek(self.offset + self.palette_info_offset)
         self.pal_info = PaletteInfo(f)
 
-        self.calculate_compression_info_offsets()
+        self._calculate_compression_info_offsets()
 
         f.seek(self.offset)
         self.raw_data = f.read(self.section_size)
 
     def export_textures(self, out_dir: str):
+        """
+        Export textures to the given directory.
+        """
         Path(out_dir).mkdir(exist_ok=True, parents=True)
         for tex_idx, param in enumerate(self.tex_info.parameters):
-            pal_idx = self.get_related_palette_idx(param.name, tex_idx)
-            bitmap, palette, comp_info = self.get_texture_data(tex_idx, pal_idx)
+            pal_idx = self._get_related_palette_idx(param.name, tex_idx)
+            bitmap, palette, comp_info = self._get_texture_data(tex_idx, pal_idx)
             im = param.format.build_image(
                 (param.width, param.height), bitmap, palette, comp_info
             )
             im.save(Path(out_dir) / f"{param.name}.png")
 
-    def get_texture_data(self, tex_idx: int, palette_idx: int):
+    def _get_texture_data(self, tex_idx: int, palette_idx: int):
         if tex_idx >= len(self.tex_info.parameters):
             raise Exception(
                 f"Given idx ({tex_idx}) is beyond max tex idx ({len(self.tex_info.parameters)})"
@@ -164,7 +171,10 @@ class TEX0:
             if tex_idx == len(self.tex_info.parameters) - 1:
                 palette_data = self.raw_data[palette_offset:]
             else:
-                next_palette_offset = self.palette_data_offset + self.pal_info.parameters[palette_idx + 1].pal_offset * 0x8
+                next_palette_offset = (
+                    self.palette_data_offset
+                    + self.pal_info.parameters[palette_idx + 1].pal_offset * 0x8
+                )
                 palette_data = self.raw_data[palette_offset:next_palette_offset]
 
         else:
@@ -186,14 +196,14 @@ class TEX0:
 
         return bitmap_data, palette_data, info_data
 
-    def calculate_compression_info_offsets(self):
+    def _calculate_compression_info_offsets(self):
         compression_info_offset = 0
         for parameters in self.tex_info.parameters:
             if parameters.format.name == "TexelCompressed":
                 parameters.compression_info_offset = compression_info_offset
                 compression_info_offset += (parameters.width * parameters.height) // 8
 
-    def get_related_palette_idx(self, tex_name: str, tex_idx: int):
+    def _get_related_palette_idx(self, tex_name: str, tex_idx: int):
         pal_name = (tex_name + "_pl")[:0x10]
         try:
             pal_idx = self.pal_info.name_map[pal_name]
@@ -311,7 +321,7 @@ class PaletteParameters:
 def texel_decompress(
     data: bytes, info: bytes, colors: list[PaletteColor], im_size: tuple[int, int]
 ) -> Tuple[bytearray, List[PaletteColor]]:
-    # TODO: remove palette stuff in this and move the function in the models folder
+    # TODO: return RGBA image data instead of indexed with palette
 
     def get_rgb(pal_index: int):
         return colors[pal_index].to_int_list()

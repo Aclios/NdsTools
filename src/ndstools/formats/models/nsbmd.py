@@ -4,6 +4,12 @@ from .tex0 import TEX0
 
 
 class NSBMD(File):
+    """
+    A NSBMD (Nitro Binary MoDel) contains a 3D model, and optionaly textures for this model.
+
+    Parsing of the 3D model data isn't currently supported, but textures can be exported.
+    """
+
     def __repr__(self):
         return self.tex.__repr__()
 
@@ -14,15 +20,18 @@ class NSBMD(File):
             self.tex_offset = f.read_UInt32()
         f.seek(self.mdl_offset)
         self.mdl = MDL0(f)
+        self.tex = None
         if self.header.section_count >= 2:
             f.seek(self.tex_offset)
             self.tex = TEX0(f)
 
     def export_textures(self, out_dir: str):
+        """
+        Export textures to the given directory. Raise if the file doesn't contain textures.
+        """
+        if self.tex is None:
+            raise Exception("This NSBMD file doesn't have a textures section.")
         self.tex.export_textures(out_dir)
-
-    def export_mapping(self, out_path: str):
-        self.tex.export_mapping(out_path)
 
 
 class MDL0:
