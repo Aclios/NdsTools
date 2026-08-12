@@ -3,6 +3,10 @@ from ndstools.compression import decompress_blz
 
 
 class Overlay:
+    """
+    A Nintendo DS overlay, which is additional code that can be loaded when needed. Can be compressed.
+    """
+
     data: bytes
 
     def __init__(self, f: EndianBinaryReader):

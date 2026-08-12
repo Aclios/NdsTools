@@ -18,6 +18,10 @@ class ROMFile:
 
 
 class NDSRom(File):
+    """
+    A Nintendo DS ROM.
+    """
+
     def read(self, f: EndianBinaryReader):
         self.name = f.read(12).decode().strip("\x00")
         self.game_code = f.read(4).decode()
@@ -144,6 +148,14 @@ class NDSRom(File):
             overlay.data = self._get_file_data(f, overlay.fat_idx)
 
     def extract_all(self, out_dir: str):
+        """
+        Extract data from the ROM:
+
+        - Write files in a "files" directory;
+        - Decompress arm9 code and overlays (if applicable) and write them in a "code" directory alongside arm7;
+        - Dump FAT, FNT and overlay tables to a "dump" directory for reference;
+        - Export game icon from the banner.
+        """
         code_dir = Path(out_dir, "code")
         dump_dir = Path(out_dir, "dump")
         files_dir = Path(out_dir, "files")

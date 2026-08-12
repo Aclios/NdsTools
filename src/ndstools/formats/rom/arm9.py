@@ -3,6 +3,10 @@ from ndstools.compression import decompress_blz
 
 
 class ARM9:
+    """
+    The ARM9 contains the code of the game. Can be compressed.
+    """
+
     def __init__(
         self, f: EndianBinaryReader, info_offset: int, data_offset: int, data_size: int
     ):

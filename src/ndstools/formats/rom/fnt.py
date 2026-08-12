@@ -40,6 +40,10 @@ class FNT_Directory:
 
 
 class FNT:
+    """
+    The File Name Table contains the file tree.
+    """
+
     def __init__(self, data: bytes):
         self.is_empty = False
         f = EndianBinaryStreamReader(data)

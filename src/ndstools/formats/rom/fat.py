@@ -10,6 +10,10 @@ class FAT_Entry:
 
 
 class FAT:
+    """
+    The File Access Table contains pointers and sizes to the data of the files.
+    """
+
     def __init__(self, data: bytes):
         file_count = len(data) // 8
         f = EndianBinaryStreamReader(data)

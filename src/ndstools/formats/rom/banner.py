@@ -37,6 +37,10 @@ class VersionDSi:
 
 
 class NDSBanner:
+    """
+    The banner contains the game title in different languages and the game icon.
+    """
+
     def __init__(self, f: EndianBinaryReader):
         self.version = f.read_UInt16()
         if not self.version in SUPPORTED_VERSIONS:
