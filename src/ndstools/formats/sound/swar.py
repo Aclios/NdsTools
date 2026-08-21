@@ -27,7 +27,7 @@ class SWAR_DATA:
     def __init__(self, f: EndianBinaryReader):
         f.check_magic(b"DATA")
         self.size = f.read_Int32()
-        padding = f.read(0x20)
+        self.padding = f.read(0x20)
         self.entry_count = f.read_Int32()
         self.entry_offsets = [f.read_Int32() for _ in range(self.entry_count)]
         self.entry_size = []

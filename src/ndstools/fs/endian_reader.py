@@ -59,7 +59,7 @@ class EndianBinaryReader:
         self.seek(-size, 1)
         return val
 
-    def read_string_until_null(self) -> bytes:
+    def read_string(self) -> bytes:
         data = b""
         byte = self.read(1)
         while byte != b"\x00":

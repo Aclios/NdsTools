@@ -1,6 +1,5 @@
 from ndstools.fs import EndianBinaryReader
 from ndstools.formats.file import File, NitroHeader
-import os
 from pathlib import Path
 from .swar import SWAR
 
@@ -48,6 +47,40 @@ class SDAT(File):
             swar = SWAR(data)
             swar.export_all(Path(out_dir) / "SWAR" / name)
 
+    def extract_raw(self, out_dir: str):
+        """
+        Extract raw files data to out_dir
+        """
+        Path(out_dir, "SSEQ").mkdir(exist_ok=True, parents=True)
+        for idx, sseq_info in enumerate(self.info.sseq_info):
+            name = self.symb.sseq_names[idx]
+            data = self.fat.entries[sseq_info.id].data
+            Path(out_dir, "SSEQ", name + ".sseq").write_bytes(data)
+
+        Path(out_dir, "SSAR").mkdir(exist_ok=True, parents=True)
+        for idx, ssar_info in enumerate(self.info.ssar_info):
+            name = self.symb.ssar_names[idx]
+            data = self.fat.entries[ssar_info.id].data
+            Path(out_dir, "SSAR", name + ".ssar").write_bytes(data)
+
+        Path(out_dir, "SBNK").mkdir(exist_ok=True, parents=True)
+        for idx, sbnk_info in enumerate(self.info.sbnk_info):
+            name = self.symb.sbnk_names[idx]
+            data = self.fat.entries[sbnk_info.id].data
+            Path(out_dir, "SBNK", name + ".sbnk").write_bytes(data)
+
+        Path(out_dir, "SWAR").mkdir(exist_ok=True, parents=True)
+        for idx, swar_info in enumerate(self.info.swar_info):
+            name = self.symb.swar_names[idx]
+            data = self.fat.entries[swar_info.id].data
+            Path(out_dir, "SWAR", name + ".swar").write_bytes(data)
+
+        Path(out_dir, "STRM").mkdir(exist_ok=True, parents=True)
+        for idx, strm_info in enumerate(self.info.strm_info):
+            name = self.symb.strm_names[idx]
+            data = self.fat.entries[strm_info.id].data
+            Path(out_dir, "STRM", name + ".strm").write_bytes(data)
+
 
 class SDAT_SYMB:
     """
@@ -80,7 +113,7 @@ class SDAT_SYMB:
         for offset in name_offsets:
             if offset != 0:
                 f.seek(offset + self.start_offset)
-                names.append(f.read_string_until_null().decode("shift-jis-2004"))
+                names.append(f.read_string_until().decode("shift-jis-2004"))
         f.seek(pos)
         return names
 
@@ -95,7 +128,7 @@ class SYMB_Entry:
         self.names = []
         for offset in self.name_offsets:
             f.seek(offset + start_offset)
-            self.names.append(f.read_string_until_null().decode("shift-jis-2004"))
+            self.names.append(f.read_string_until().decode("shift-jis-2004"))
         f.seek(pos)
 
 
@@ -141,7 +174,7 @@ class SSEQ_INFO:
         self.channel_pressure = f.read_UInt8()
         self.polyphonic_pressure = f.read_UInt8()
         self.play = f.read_UInt16()
-        padding = f.read(1)
+        self.padding = f.read(1)
 
 
 class SSAR_INFO:
@@ -154,10 +187,10 @@ class SBNK_INFO:
     def __init__(self, f: EndianBinaryReader):
         self.id = f.read_UInt16()
         self.unk = f.read_UInt16()
-        self.associated_swar1 = f.read_UInt16()
-        self.associated_swar2 = f.read_UInt16()
-        self.associated_swar3 = f.read_UInt16()
-        self.associated_swar4 = f.read_UInt16()
+        self.associated_swar1 = f.read_Int16()
+        self.associated_swar2 = f.read_Int16()
+        self.associated_swar3 = f.read_Int16()
+        self.associated_swar4 = f.read_Int16()
 
 
 class SWAR_INFO:
@@ -175,7 +208,6 @@ class PLAYER_INFO:
 class STRM_INFO:
     def __init__(self, f: EndianBinaryReader):
         self.id = f.read_UInt16()
-        pass
 
 
 class PLAYER2_INFO:

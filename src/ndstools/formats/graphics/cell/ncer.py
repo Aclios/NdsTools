@@ -253,7 +253,7 @@ class NCER_LABL:
         name_start = f.tell()
         for name_offset in self.cell_names_offset:
             f.seek(name_start + name_offset)
-            self.cell_names.append(f.read_string_until_null())
+            self.cell_names.append(f.read_string())
 
         f.seek(pos + self.section_size)
 
